@@ -1,6 +1,6 @@
 # Entra App Cleanup
 
-**Sign in with your M365 admin account and clean up Entra ID app registrations: last sign-in, owners, active secrets.**
+**Sign in with your M365 admin account and clean up Entra ID app registrations: last sign-in, owners, active secrets, sensitive permissions, user restriction, Conditional Access for workload identities.**
 
 One HTML page, 100% client-side, read-only. No backend, no telemetry: the data goes from Microsoft Graph straight to your browser.
 
@@ -8,27 +8,30 @@ One HTML page, 100% client-side, read-only. No backend, no telemetry: the data g
 
 ## What you get
 
-- **Overview**: number of app registrations, candidates to delete, unused apps that still hold a valid secret, apps without an active owner, apps to review. Distribution of last sign-in, owners and credentials, and a priority list.
-- **App registrations**: every app with its verdict, last sign-in, owners (disabled owners flagged), valid and expired secrets and certificates. Search, filters, sort, CSV export. Select a row for the details: sign-in by type (delegated or app-only, as client or as resource), each credential with its expiry and **last use**, and what to do.
-- **Cleanup plan**: four lists in order: (1) remove secrets on unused apps, (2) delete unused apps, (3) give an owner, (4) remove expired credentials. Generates a PowerShell script where every delete line is **commented out**.
+- **Overview**: app registrations, sensitive apps, unused apps that still hold a valid secret, candidates to delete, apps without an active owner, apps any user can sign in to. Distribution of sensitivity, last sign-in, owners and credentials, and a priority list.
+- **App registrations**: every app with its criticality, verdict, sensitivity, top permissions, last sign-in, owners (disabled owners flagged), secrets and certificates. Search (also by permission), filters, sort.
+- **Sensitive apps**: apps ranked by what their **granted** permissions allow, app-only or delegated, with the **user restriction** state ("Assignment required" on the enterprise app) and the main recommendation.
+- **Recommendations per app, ranked by criticality**: remove secrets on unused apps, delete, reduce application permissions (with the least-privilege alternative: Sites.Selected, RBAC for Applications in Exchange Online…), replace secrets with certificates or managed identities, require user assignment, review admin consents, user Conditional Access for delegated apps, owners, expiring or useless credentials.
+- **Conditional Access for workload identities**: for app-only apps, reads the service principal sign-in logs of the last 30 days, lists the source IPs, groups them into ranges, and generates a named location plus a blocking policy in **report-only** mode (JSON and PowerShell).
+- **Cleanup plan**: four lists in order, plus a PowerShell script where every delete line is **commented out**.
+- **Exports**: full CSV (permissions, consents, owners, credentials, IPs, recommendations) and a **PowerPoint deck** ranked by criticality: summary, action plan, apps by criticality, one slide per critical app, workload identity proposals, method.
 - English and French, light and dark themes.
 
-## Verdict
+## How it is computed
 
-| Verdict | Rule |
+| | Rule |
 | --- | --- |
-| Delete | No sign-in of any kind for more than *N* days (default 90) and the app is older than *N* days |
-| Review | Used, but no active owner, expired credentials, a credential never used, a credential expiring soon or a secret valid over 2 years |
-| Keep | Used, owned, clean |
-| Unknown | Sign-in activity could not be read |
-
-"Valid secret on unused app" is flagged on its own: it is the real exposure, remove those secrets first.
+| Verdict: Delete | No sign-in of any kind for more than *N* days (default 90) and the app is older than *N* days |
+| Verdict: Review | Used, but something to fix (owner, credentials, user restriction on a sensitive app…) |
+| Sensitivity | Highest level among granted permissions. Critical: control of the directory, roles, apps, all mail or all files. Delegated permissions count one level lower |
+| Criticality | Most severe recommendation for the app |
+| User restriction | "Assignment required" off on the enterprise app = any user of the tenant can sign in |
 
 ## Setup (once per tenant)
 
 1. Entra admin center → **App registrations** → **New registration**, single tenant.
 2. **Authentication** → **Add a platform** → **Single-page application** → redirect URI: the exact URL where you open the page, for example `https://brahagou.github.io/entra-app-cleanup/` (the page shows the value to copy).
-3. **API permissions** → Microsoft Graph → **Delegated**: `Application.Read.All`, `AuditLog.Read.All` → **Grant admin consent**.
+3. **API permissions** → Microsoft Graph → **Delegated**: `Application.Read.All`, `AuditLog.Read.All`, `Directory.Read.All` → **Grant admin consent**.
 4. Open the page, enter the tenant ID and the client ID, sign in.
 
 No client secret: the page uses the authorization code flow with PKCE.
@@ -39,21 +42,21 @@ No client secret: the page uses the authorization code flow with PKCE.
 # Sign in with the right to create an app registration and grant consent
 Connect-MgGraph -Scopes 'Application.ReadWrite.All','DelegatedPermissionGrant.ReadWrite.All'
 
+# Find Microsoft Graph and the ids of the three delegated permissions by name
+$graph  = Get-MgServicePrincipal -Filter "appId eq '00000003-0000-0000-c000-000000000000'"
+$scopes = 'Application.Read.All','AuditLog.Read.All','Directory.Read.All'
+$access = $graph.Oauth2PermissionScopes | Where-Object Value -in $scopes |
+          ForEach-Object { @{ Id = $_.Id; Type = 'Scope' } }
+
 # Create the app registration with an SPA redirect URI (change it if you host the page elsewhere)
 $app = New-MgApplication -DisplayName 'Entra App Cleanup' -SignInAudience AzureADMyOrg `
   -Spa @{ RedirectUris = @('https://brahagou.github.io/entra-app-cleanup/') } `
-  -RequiredResourceAccess @{
-    ResourceAppId  = '00000003-0000-0000-c000-000000000000'   # Microsoft Graph
-    ResourceAccess = @(
-      @{ Id = 'c79f8feb-a9db-4090-85f9-90d820caa0eb'; Type = 'Scope' }  # Application.Read.All (delegated)
-      @{ Id = 'e4c9e354-4dc5-45b8-9e7c-e1393b0b1a20'; Type = 'Scope' }  # AuditLog.Read.All (delegated)
-    ) }
+  -RequiredResourceAccess @{ ResourceAppId = $graph.AppId; ResourceAccess = $access }
 
-# Create its service principal, then grant tenant-wide admin consent for the two scopes
-$sp    = New-MgServicePrincipal -AppId $app.AppId
-$graph = Get-MgServicePrincipal -Filter "appId eq '00000003-0000-0000-c000-000000000000'"
+# Create its service principal, then grant tenant-wide admin consent for the three scopes
+$sp = New-MgServicePrincipal -AppId $app.AppId
 New-MgOauth2PermissionGrant -ClientId $sp.Id -ConsentType AllPrincipals -ResourceId $graph.Id `
-  -Scope 'Application.Read.All AuditLog.Read.All' | Out-Null
+  -Scope ($scopes -join ' ') | Out-Null
 
 # Values to paste into the page
 "Client ID: $($app.AppId)"; "Tenant ID: $((Get-MgContext).TenantId)"
@@ -61,8 +64,9 @@ New-MgOauth2PermissionGrant -ClientId $sp.Id -ConsentType AllPrincipals -Resourc
 
 ## Requirements
 
-- A role that can read applications and sign-in reports: **Global Reader**, **Reports Reader** or **Security Reader**.
-- **Entra ID P1 or P2** for sign-in activity (`/beta/reports/servicePrincipalSignInActivities` and `/beta/reports/appCredentialSignInActivities`). Without it, the page still lists owners and credentials, and the verdict shows *Unknown*.
+- A read role: **Global Reader**, or **Security Reader** plus **Reports Reader**.
+- **Entra ID P1 or P2** for sign-in activity and sign-in logs. Without it, permissions, owners and credentials still work and the verdict shows *Unknown*.
+- **Workload Identities Premium** to create the proposed Conditional Access policies (the analysis itself does not need it).
 
 ## Run locally
 
@@ -78,6 +82,8 @@ Settings → Pages → *Deploy from a branch* → `main` / `docs`.
 ## Limits
 
 - Sign-in activity is kept for a limited time: an app used once a year can look inactive. Confirm with the owner before deleting.
+- Application permissions are read from the APIs the apps request plus Microsoft Graph, Exchange Online and SharePoint Online.
+- An app running on dynamic cloud IPs needs a fixed egress (NAT gateway, firewall) before an IP-based policy makes sense.
 - Only app registrations owned by the tenant are listed, not enterprise apps from other publishers.
 - A deleted app stays 30 days in the recycle bin (`Restore-MgDirectoryDeletedItem`).
 

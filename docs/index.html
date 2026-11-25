@@ -215,6 +215,24 @@ footer.f{color:var(--text-3);font-size:12px;margin-top:8px}
   .count{margin-left:0;width:100%}
 }
 @media (min-width:2000px){ html{zoom:1.12} }
+
+/* v2 additions */
+.kpis{grid-template-columns:repeat(6,1fr)}
+.dists{grid-template-columns:repeat(4,minmax(0,1fr))}
+.lv-crit{background:var(--fail-bg);color:var(--fail)} .lv-high{background:var(--part-bg);color:var(--part)}
+.lv-med{background:var(--inv-bg);color:var(--inv)} .lv-low{background:var(--na-bg);color:var(--na)} .lv-none{background:var(--surface-2);color:var(--text-3)}
+.tag.lv-crit,.tag.lv-high,.tag.lv-med,.tag.lv-low{border-color:transparent}
+.ph-row{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.reco{font-size:13px;max-width:30ch;min-width:18ch}
+.reco .pill{margin-right:6px}
+.perms{display:flex;flex-wrap:wrap;gap:4px;max-width:34ch}
+ul.todo li .pill{flex:none}
+ul.todo li div{display:flex;flex-direction:column;gap:2px}
+ul.todo li small{color:var(--text-2)}
+.wid{border:1px solid color-mix(in srgb,var(--brand) 40%,transparent);background:var(--brand-bg);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;font-size:13px}
+.statusline{font-size:13px;color:var(--text-2);display:inline-flex;gap:8px;align-items:center}
+@media (max-width:1400px){ .kpis{grid-template-columns:repeat(3,1fr)} .dists{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:760px){ .kpis{grid-template-columns:repeat(2,1fr)} .dists{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -235,6 +253,7 @@ footer.f{color:var(--text-3);font-size:12px;margin-top:8px}
   <div class="grp" data-i18n="grpReport"></div>
   <a href="#overview" data-v="overview" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2h5v5H2zM9 2h5v3H9zM9 7h5v7H9zM2 9h5v5H2z"/></svg><span data-i18n="navOverview"></span></a>
   <a href="#apps" data-v="apps" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 3h2v2H2zm4 0h8v2H6zM2 7h2v2H2zm4 0h8v2H6zm-4 4h2v2H2zm4 0h8v2H6z"/></svg><span data-i18n="navApps"></span></a>
+  <a href="#sensitive" data-v="sensitive" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1 14 3.5V8c0 3.3-2.5 6-6 7-3.5-1-6-3.7-6-7V3.5zm-.75 4v4h1.5V5zm0 5v1.5h1.5V10z"/></svg><span data-i18n="navSensitive"></span><span class="badge" id="sensBadge" hidden></span></a>
   <a href="#cleanup" data-v="cleanup" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 1h4v1.5h4V4H2V2.5h4zM3 5h10l-.8 10H3.8zm3 2v6h1.2V7zm2.8 0v6H10V7z"/></svg><span data-i18n="navCleanup"></span><span class="badge" id="cleanBadge" hidden></span></a>
   <div class="grp" data-i18n="grpSetup"></div>
   <a href="#connect" data-v="connect"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a3.5 3.5 0 0 1 3.5 3.5V6H13v9H3V6h1.5V4.5A3.5 3.5 0 0 1 8 1zm0 1.5a2 2 0 0 0-2 2V6h4V4.5a2 2 0 0 0-2-2zM7.25 9v3h1.5V9z"/></svg><span data-i18n="navConnect"></span></a>
@@ -275,9 +294,10 @@ footer.f{color:var(--text-3);font-size:12px;margin-top:8px}
 
 <!-- OVERVIEW -->
 <section class="view" id="v-overview">
-  <div class="ph"><h1 data-i18n="navOverview"></h1><p id="ovIntro"></p></div>
+  <div class="ph-row"><div class="ph"><h1 data-i18n="navOverview"></h1><p id="ovIntro"></p></div>
+    <div class="actions-row"><button class="btn primary" type="button" data-deck="1" data-i18n="deckBtn"></button><button class="btn" type="button" data-csvall="1" data-i18n="csvAll"></button></div></div>
   <div class="grid kpis" id="kpis"></div>
-  <div class="grid halves" id="dists"></div>
+  <div class="grid dists" id="dists"></div>
   <div class="card">
     <h2 data-i18n="topTitle"></h2><p class="sub" data-i18n="topSub"></p>
     <div class="scroll"><table class="tbl" id="topTbl"></table></div>
@@ -291,6 +311,7 @@ footer.f{color:var(--text-3);font-size:12px;margin-top:8px}
     <div class="toolbar">
       <input class="search" id="q" type="search" data-i18n-ph="searchPh">
       <select class="sel" id="fVerdict" aria-label="Verdict"></select>
+      <select class="sel" id="fTier" aria-label="Sensitivity"></select>
       <select class="sel" id="fSign" aria-label="Sign-in"></select>
       <select class="sel" id="fOwner" aria-label="Owners"></select>
       <select class="sel" id="fCred" aria-label="Credentials"></select>
@@ -300,6 +321,26 @@ footer.f{color:var(--text-3);font-size:12px;margin-top:8px}
     </div>
     <div class="scroll" style="margin-top:12px"><table class="tbl" id="appTbl"></table></div>
     <div class="more" id="moreWrap" hidden><button class="btn" type="button" id="moreBtn"></button></div>
+  </div>
+</section>
+
+<!-- SENSITIVE -->
+<section class="view" id="v-sensitive">
+  <div class="ph-row"><div class="ph"><h1 data-i18n="navSensitive"></h1><p data-i18n="snIntro"></p></div>
+    <div class="actions-row"><button class="btn primary" type="button" data-deck="1" data-i18n="deckBtn"></button></div></div>
+  <div class="card">
+    <h2 data-i18n="widTitle"></h2>
+    <p class="sub" data-i18n="widSub"></p>
+    <div class="actions-row"><button class="btn primary" type="button" id="ipAllBtn" data-i18n="ipAll"></button><button class="btn" type="button" id="caAllBtn" data-i18n="caAll"></button><span class="statusline" id="ipStatus"></span></div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <select class="sel" id="snTier" aria-label="Sensitivity"></select>
+      <select class="sel" id="snKind" aria-label="Type"></select>
+      <button class="btn" type="button" id="snCsv" data-i18n="csv"></button>
+      <span class="count" id="snCount"></span>
+    </div>
+    <div class="scroll" style="margin-top:12px"><table class="tbl" id="snTbl"></table></div>
   </div>
 </section>
 
@@ -344,11 +385,15 @@ footer.f{color:var(--text-3);font-size:12px;margin-top:8px}
    redirect flow. Token kept in sessionStorage only.
    Data: Microsoft Graph
      v1.0 /applications (+ owners)
+     v1.0 /servicePrincipals, /servicePrincipals/{resource}/appRoleAssignedTo
+     v1.0 /oauth2PermissionGrants
      beta /reports/servicePrincipalSignInActivities
      beta /reports/appCredentialSignInActivities
+     beta /auditLogs/signIns (service principal sign-ins, on demand)
    ============================================================ */
+const VERSION = "2.0";
 const GRAPH = "https://graph.microsoft.com";
-const SCOPES = "openid profile offline_access https://graph.microsoft.com/Application.Read.All https://graph.microsoft.com/AuditLog.Read.All";
+const SCOPES = "openid profile offline_access https://graph.microsoft.com/Application.Read.All https://graph.microsoft.com/AuditLog.Read.All https://graph.microsoft.com/Directory.Read.All";
 const REDIRECT = location.origin + location.pathname;
 const DAY = 864e5;
 const $ = s => document.querySelector(s);
@@ -368,8 +413,8 @@ const SS = {
 const T = {
 en:{
   edition:"Read-only · runs in your browser", theme:"Theme", signOut:"Sign out",
-  grpReport:"Report", grpSetup:"Setup", navOverview:"Overview", navApps:"App registrations", navCleanup:"Cleanup plan", navConnect:"Sign in", navAbout:"About",
-  cnTitle:"Sign in to your tenant", cnIntro:"Sign in with an admin account. The page reads your app registrations, their owners, their secrets and certificates, and their last sign-in. Nothing is written to your tenant and nothing leaves your browser.",
+  grpReport:"Report", grpSetup:"Setup", navOverview:"Overview", navApps:"App registrations", navSensitive:"Sensitive apps", navCleanup:"Cleanup plan", navConnect:"Sign in", navAbout:"About",
+  cnTitle:"Sign in to your tenant", cnIntro:"Sign in with an admin account. The page reads your app registrations, their permissions, owners, secrets and certificates, their last sign-in and the IP addresses their service principals sign in from. Nothing is written to your tenant and nothing leaves your browser.",
   cnSignin:"Connection", cnSigninSub:"Values are saved in this browser only.",
   fTenant:"Tenant ID or domain", fTenantHelp:"GUID or primary domain, e.g. contoso.onmicrosoft.com",
   fClient:"Application (client) ID", fClientHelp:"The app registration you created for this page (see the steps on the right).",
@@ -380,76 +425,106 @@ en:{
   steps:[
     "Entra admin center → <b>App registrations</b> → <b>New registration</b>. Name: <code>Entra App Cleanup</code>, single tenant.",
     "<b>Authentication</b> → <b>Add a platform</b> → <b>Single-page application</b> → paste the redirect URI shown on the left.",
-    "<b>API permissions</b> → Microsoft Graph → <b>Delegated</b>: <code>Application.Read.All</code> and <code>AuditLog.Read.All</code>, then <b>Grant admin consent</b>.",
-    "Sign in with an account that holds a read role, for example <b>Global Reader</b>, <b>Reports Reader</b> or <b>Security Reader</b>. Sign-in activity needs Entra ID P1 or P2.",
+    "<b>API permissions</b> → Microsoft Graph → <b>Delegated</b>: <code>Application.Read.All</code>, <code>AuditLog.Read.All</code> and <code>Directory.Read.All</code>, then <b>Grant admin consent</b>.",
+    "Sign in with an account that holds a read role, for example <b>Global Reader</b>, or <b>Security Reader</b> plus <b>Reports Reader</b>. Sign-in activity and sign-in logs need Entra ID P1 or P2.",
     "Copy the <b>Application (client) ID</b> and the <b>Directory (tenant) ID</b> into the form."
   ],
-  stApps:"App registrations and owners", stSign:"Sign-in activity per app", stCred:"Last use of each secret and certificate",
+  stApps:"App registrations and owners", stSign:"Sign-in activity per app", stCred:"Last use of each secret and certificate", stPerm:"Service principals and application permissions", stGrant:"Delegated permissions (consents)",
   stSkip:"not available", errSignNA:"Sign-in activity is not available ({0}). Last sign-in and the delete verdict cannot be computed: check the AuditLog.Read.All consent, your role and your Entra ID P1/P2 licence.",
-  errCredNA:"The last use of each credential is not available ({0}). Everything else works.",
+  errCredNA:"The last use of each credential is not available ({0}).", errPermNA:"Application permissions are not available ({0}): sensitivity uses the requested permissions.", errGrantNA:"Delegated consents are not available ({0}): check the Directory.Read.All consent.",
   errAuth:"Sign-in failed: {0}", errExpired:"Your session has expired. Sign in again to rescan.", errGraph:"Graph error: {0}",
   needCfg:"Enter the tenant and the client ID first.",
   demoOn:"Sample data: fictitious apps to explore the page.", demoExit:"Leave the demo",
   ovIntro:"{0} app registrations scanned on {1}. Inactive means no sign-in for {2} days.",
-  kTotal:"App registrations", kDelete:"Candidates to delete", kRisk:"Active secret, unused app", kOwner:"No active owner", kReview:"To review",
-  kTotalF:"in the tenant", kDeleteF:"never used or inactive", kRiskF:"remove first", kOwnerF:"no owner or all disabled", kReviewF:"still used, needs attention",
-  dSign:"Last sign-in", dOwner:"Owners", dCred:"Credentials",
-  topTitle:"Priority list", topSub:"Unused apps that still hold a valid secret or certificate come first: anyone holding the secret can still use them.",
-  appsIntro:"Select a row to see owners, credentials and what to do.",
-  searchPh:"Search by name, app ID or owner", reset:"Reset", csv:"Export CSV",
-  cName:"Application", cCreated:"Created", cLast:"Last sign-in", cOwners:"Owners", cCreds:"Credentials", cVerdict:"Verdict",
+  deckBtn:"Export PowerPoint", csvAll:"Export everything (CSV)",
+  kTotal:"App registrations", kSens:"Sensitive apps", kDelete:"Candidates to delete", kRisk:"Valid secret, unused app", kOwner:"No active owner", kUnres:"No user restriction",
+  kTotalF:"in the tenant", kSensF:"critical or high permissions", kDeleteF:"never used or inactive", kRiskF:"remove first", kOwnerF:"no owner or all disabled", kUnresF:"any user can sign in",
+  dSign:"Last sign-in", dOwner:"Owners", dCred:"Credentials", dTier:"Sensitivity",
+  topTitle:"Priorities", topSub:"Apps ranked by the most severe recommendation, then by sensitivity.",
+  appsIntro:"Select a row to see permissions, owners, credentials and recommendations.",
+  searchPh:"Search by name, app ID, owner or permission", reset:"Reset", csv:"Export CSV",
+  cName:"Application", cCreated:"Created", cLast:"Last sign-in", cOwners:"Owners", cCreds:"Credentials", cVerdict:"Verdict", cTier:"Sensitivity", cPerms:"Top permissions", cAssign:"User restriction", cIps:"Known IPs", cReco:"Main recommendation", cSev:"Criticality",
   showing:"{0} of {1}", showMore:"Show {0} more",
-  allVerdict:"All verdicts", allSign:"All sign-in states", allOwner:"All owner states", allCred:"All credential states",
+  allVerdict:"All verdicts", allSign:"All sign-in states", allOwner:"All owner states", allCred:"All credential states", allTier:"All sensitivities", allKind:"App-only and delegated",
+  k_app:"App-only", k_del:"Delegated", k_both:"App-only + delegated",
   v_delete:"Delete", v_review:"Review", v_ok:"Keep", v_unknown:"Unknown",
   s_active:"Active", s_stale:"Inactive", s_never:"Never", s_unknown:"Unknown", s_recent:"Recent, unused",
   o_ok:"Has owner", o_none:"No owner", o_disabled:"Owners disabled",
   c_active:"Valid secret", c_cert:"Valid certificate only", c_expired:"Expired only", c_none:"None", c_soon:"Expiring soon",
+  l_crit:"Critical", l_high:"High", l_med:"Medium", l_low:"Low", l_none:"None",
+  tierMin_crit:"Critical only", tierMin_high:"High and above", tierMin_med:"Medium and above",
+  asg_yes:"Assignment required", asg_no:"Everyone", asg_na:"n/a",
   ago:"{0} d ago", today:"today", never:"never", none:"none",
   fSecrets:"{0} secret(s)", fCerts:"{0} cert(s)", fExpired:"{0} expired",
-  tRisk:"Valid secret on unused app", tNoOwner:"No owner", tDisOwner:"Owners disabled", tExpired:"Expired credentials", tUnusedCred:"Credential never used", tSoon:"Expires soon", tLong:"Secret valid over 2 years", tMulti:"Multi-tenant",
-  flyFacts:"Summary", flySign:"Sign-in activity", flyOwners:"Owners", flyCreds:"Secrets and certificates", flyTodo:"What to do", flyOpen:"Open in Entra",
-  fCreatedL:"Created", fAudience:"Audience", fLastL:"Last sign-in", fVerdict:"Verdict", fAge:"Age", fPublisher:"Publisher domain",
+  tRisk:"Valid secret on unused app", tNoOwner:"No owner", tDisOwner:"Owners disabled", tExpired:"Expired credentials", tUnusedCred:"Credential never used", tSoon:"Expires soon", tLong:"Secret valid over 2 years", tUnres:"No user restriction", tMulti:"Multi-tenant", tAppOnly:"App-only", tDel:"Delegated",
+  flyFacts:"Summary", flySign:"Sign-in activity", flyOwners:"Owners", flyCreds:"Secrets and certificates", flyReco:"Recommendations", flyPerms:"Permissions", flyOpen:"Open in Entra", flyWid:"Conditional Access for this workload identity",
+  fCreatedL:"Created", fAudience:"Audience", fLastL:"Last sign-in", fVerdict:"Verdict", fPublisher:"Publisher domain", fTierL:"Sensitivity", fAsgL:"User restriction", fSpL:"Service principal",
   sAny:"Any", sDelClient:"Delegated (as client)", sDelRes:"Delegated (as resource)", sAppClient:"App-only (as client)", sAppRes:"App-only (as resource)",
   crType:"Type", crName:"Name", crEnd:"Expires", crUsed:"Last used", crStatus:"Status", secret:"Secret", cert:"Certificate",
   cr_active:"Valid", cr_expired:"Expired", cr_soon:"Expires soon",
+  pType:"Type", pRes:"API", pPerm:"Permission", pLevel:"Level", pConsent:"Consent", pAlt:"Least privilege",
+  pAdmin:"admin (all users)", pUsers:"{0} user(s)", pRequested:"requested, not granted", pApp:"Application", pDel:"Delegated", pNone:"No permission.",
+  altSites:"Sites.Selected, scoped to the needed sites", altExo:"RBAC for Applications in Exchange Online, scoped to a mailbox group", altEws:"Microsoft Graph with RBAC for Applications (EWS is being retired)", altDir:"granular permissions (User.*, Group.*) or a role scoped to an administrative unit", altApp:"Application.ReadWrite.OwnedBy", altAu:"a role scoped to an administrative unit", altRole:"no app should hold this outside a privileged-access tool",
   disabled:"disabled", sp:"service principal",
-  todoDelete:"No sign-in for more than {0} days and created over {0} days ago: confirm with the owner, then delete the app. A deleted app stays restorable for 30 days.",
-  todoRisk:"Remove the valid secrets and certificates now, even before the delete decision: they are the real exposure.",
-  todoNoOwner:"Assign at least two owners so someone answers for this app.",
-  todoDisOwner:"All owners are disabled accounts: assign active owners.",
-  todoExpired:"Remove the expired credentials: they are noise and hide the real ones.",
-  todoUnused:"A valid credential has never been used while the app signs in: it is probably a leftover, remove it.",
-  todoSoon:"A credential expires soon: rotate it, or let it expire if it is no longer used.",
-  todoLong:"A secret is valid for more than two years: prefer short secrets, a certificate or a managed identity.",
-  todoOk:"Nothing to clean up. Review again at the next pass.",
-  todoUnknown:"Sign-in activity is not available: the verdict cannot be computed.",
-  todoRecent:"Created less than {0} days ago and not used yet: check again later.",
+  ipBtn:"Analyze sign-in IPs (30 days)", ipRun:"Reading sign-in logs…", ipNone:"No service principal sign-in in the last 30 days.", ipErr:"Sign-in logs not available: {0}",
+  ipHead:"{0} sign-ins from {1} IP address(es) in the last 30 days{2}.", ipTrunc:" (first 5,000 events only)",
+  ipIp:"IP address", ipCount:"Sign-ins", ipLast:"Last seen", ipWhere:"Location", ipRanges:"Proposed ranges",
+  caBtn:"Conditional Access proposal", caTitle:"Conditional Access proposal (workload identity)", caSub:"Named location built from the observed IPs, and a policy that blocks the service principal outside it. Created in report-only mode. Needs Workload Identities Premium.",
+  ipAll:"Analyze IPs of app-only apps", caAll:"All Conditional Access proposals", ipProgress:"{0}/{1} analyzed…", ipDone:"{0} app(s) analyzed.", caNone:"Analyze the IPs first.",
+  widTitle:"Workload identities: IP-based Conditional Access", widSub:"For apps that sign in with their own identity (app-only), read their service principal sign-ins for the last 30 days, then propose a named location and a policy that blocks them outside these IPs. Report-only first. Needs Workload Identities Premium.",
+  snIntro:"Apps ranked by sensitivity: what they can do with the permissions actually granted, whether they act on their own (app-only) or for a user (delegated), and whether any user can sign in to them.",
+  sev_crit:"Critical", sev_high:"High", sev_med:"Medium", sev_low:"Low", sev_ok:"OK",
+  r_rmSecrets:"Remove the valid secrets and certificates now: the app is unused but can still authenticate. Do it before the delete decision.",
+  r_delete:"No sign-in for more than {0} days and created over {0} days ago: confirm with the owner, then delete the app. A deleted app stays restorable for 30 days.",
+  r_reducePerms:"Reduce application permissions: {0}.",
+  r_caWid:"Restrict where the app can sign in from: Conditional Access for workload identities, block outside known IPs (report-only first).",
+  r_caWidIps:"Restrict where the app can sign in from: {0} IP(s) seen in 30 days, a named location and a blocking policy are ready (report-only first).",
+  r_certInstead:"Replace the client secret with a certificate, a federated credential or a managed identity.",
+  r_assignReq:"Turn on \"Assignment required\" on the enterprise app and assign a group: today any user of the tenant can sign in to it.",
+  r_caUser:"Delegated permissions are fine: the app only acts within the signed-in user's rights. Target it in a user Conditional Access policy (MFA, compliant device) and keep the consent limited.",
+  r_adminConsent:"Review the admin consent granted for all users on: {0}.",
+  r_noOwner:"Assign at least two owners so someone answers for this app.",
+  r_disOwner:"All owners are disabled accounts: assign active owners.",
+  r_multiTenant:"The app is multi-tenant: check that accounts from other tenants really need to sign in.",
+  r_expired:"Remove the expired credentials: they are noise and hide the real ones.",
+  r_soon:"A credential expires soon: rotate it, or let it expire if it is no longer used.",
+  r_long:"A secret is valid for more than two years: prefer short secrets, a certificate or a managed identity.",
+  r_unusedCred:"A valid credential has never been used while the app signs in: probably a leftover, remove it.",
+  r_unusedReq:"Remove requested permissions that were never granted: {0}.",
+  r_recent:"Created less than {0} days ago and not used yet: check again later.",
+  r_unknown:"Sign-in activity is not available: the verdict cannot be computed.",
+  r_ok:"Nothing to do. Review again at the next pass.",
+  rs_rmSecrets:"Remove secrets on unused app", rs_delete:"Delete unused app", rs_reducePerms:"Reduce app permissions", rs_caWid:"CA workload identity (IPs)", rs_certInstead:"Secret → certificate / MI", rs_assignReq:"Require user assignment", rs_caUser:"User CA policy (delegated)", rs_adminConsent:"Review admin consent", rs_noOwner:"Assign owners", rs_disOwner:"Replace disabled owners", rs_multiTenant:"Check multi-tenant", rs_expired:"Remove expired credentials", rs_soon:"Rotate expiring credential", rs_long:"Shorten secret lifetime", rs_unusedCred:"Remove unused credential", rs_unusedReq:"Clean requested permissions", rs_recent:"Check again later", rs_unknown:"Sign-in data missing", rs_ok:"Nothing to do",
   clIntro:"The apps to act on, grouped by action. Nothing is changed from this page: export the list, check with the owners, then act.",
   clA:"1. Remove secrets on unused apps", clASub:"Exposure today: unused apps that can still authenticate.",
   clB:"2. Delete unused apps", clBSub:"Never used or inactive, older than the threshold.",
   clC:"3. Give an owner", clCSub:"Apps still in use with no active owner.",
-  clD:"4. Remove expired credentials", clDSub:"Apps carrying expired secrets or certificates.",
+  clD:"4. Restrict users", clDSub:"Apps any user of the tenant can sign in to.",
   clEmpty:"Nothing here.", clMore:"and {0} more",
   clScriptTitle:"Cleanup script", clScriptSub:"Generates a Microsoft Graph PowerShell script for the delete candidates. Every delete line is commented out: you uncomment what you have validated. Deleted apps go to the recycle bin for 30 days.",
   clScriptBtn:"Generate the script", clCsvBtn:"Export candidates (CSV)",
   scriptTitle:"Cleanup script (PowerShell)", scriptSub:"Review each line. Delete lines are commented out on purpose.",
-  aboutHtml:`<h2>Why</h2><p>App registrations pile up: proofs of concept, old integrations, apps of people who left. Each one that still holds a valid secret is a way into the tenant that nobody watches. This page lists them, shows whether they are still used, who owns them and whether a secret is still valid, then proposes a cleanup order.</p>
-<h2>How the verdict is computed</h2><ul>
-<li><b>Delete</b>: no sign-in (delegated or app-only, as client or as resource) for more than the threshold, and the app is older than the threshold.</li>
-<li><b>Review</b>: the app is used but has no active owner, carries expired credentials, a credential never used, a credential about to expire or a secret valid over two years.</li>
-<li><b>Keep</b>: used, owned, clean.</li>
-<li><b>Unknown</b>: sign-in activity could not be read.</li></ul>
-<h2>Security</h2><ul><li>Delegated permissions only, read-only: <code>Application.Read.All</code>, <code>AuditLog.Read.All</code>.</li>
-<li>No backend, no telemetry. The token stays in this tab (sessionStorage) and is cleared on sign-out.</li>
+  deckBuilding:"Building the deck…", deckDone:"Deck downloaded", deckFail:"Could not build the deck (the PowerPoint library could not load).",
+  dTitle:"App registration review", dSyn:"Where we stand", dSynSub:"{0} app registrations · inactive after {1} days", dPlan:"Action plan", dPlanSub:"Recommendations grouped by action, most critical first", dApps:"Apps by criticality", dAppsSub:"{0} apps with something to do · page {1}/{2}", dCard:"Critical app", dWid:"Conditional Access for workload identities", dWidSub:"Named locations from 30 days of sign-in logs · policies in report-only", dWidNone:"No IP analysis yet: run \"Analyze IPs of app-only apps\" before exporting.", dMethod:"Method and limits",
+  dApps_n:"Apps", dExamples:"Examples", dBySev:"Apps by criticality", dByTier:"Apps by sensitivity", dGen:"Generated by Entra App Cleanup", dRanges:"Ranges", dPolicy:"Policy",
+  dMethodItems:["Delete: no sign-in of any kind beyond the threshold, app older than the threshold.","Sensitivity: highest level among granted permissions (application permissions weigh one level more than delegated).","Criticality: most severe recommendation for the app.","IPs: service principal sign-ins of the last 30 days; an app running on dynamic cloud IPs needs a fixed egress first.","Always confirm with the owner before deleting: activity is kept for a limited time."],
+  aboutHtml:`<h2>Why</h2><p>App registrations pile up: proofs of concept, old integrations, apps of people who left. Each one that still holds a valid secret is a way into the tenant that nobody watches, and the most dangerous are those with strong application permissions. This page lists them, shows whether they are used, who owns them, what they can do, whether any user can sign in to them, then proposes recommendations ranked by criticality.</p>
+<h2>How it is computed</h2><ul>
+<li><b>Verdict</b>: <i>Delete</i> when no sign-in of any kind (delegated or app-only, as client or as resource) beyond the threshold and the app is older than the threshold. <i>Review</i> when used but with something to fix. <i>Keep</i> otherwise.</li>
+<li><b>Sensitivity</b>: highest level among granted permissions. Critical: control of the directory, roles, apps, all mail or all files (e.g. RoleManagement.ReadWrite.Directory, Application.ReadWrite.All, Mail.ReadWrite, Sites.FullControl.All, full_access_as_app). Delegated permissions count one level lower because they stay within the user's rights.</li>
+<li><b>User restriction</b>: whether "Assignment required" is on for the enterprise app. When it is off, any user of the tenant can sign in to it.</li>
+<li><b>Workload identity Conditional Access</b>: for app-only apps, IPs come from the service principal sign-in logs of the last 30 days. IPv4 addresses are grouped by /24 when three or more share it.</li></ul>
+<h2>Security</h2><ul><li>Delegated permissions only, read-only: <code>Application.Read.All</code>, <code>AuditLog.Read.All</code>, <code>Directory.Read.All</code>.</li>
+<li>No backend, no telemetry. The token stays in this tab (sessionStorage) and is cleared on sign-out. The PowerPoint library is only loaded when you export a deck.</li>
 <li>Authorization code flow with PKCE, no client secret.</li></ul>
-<h2>Limits</h2><ul><li>Sign-in activity comes from the Graph beta reports and needs Entra ID P1 or P2.</li>
-<li>Activity is kept for a limited period: an app used once a year may look inactive. Always confirm with the owner.</li>
+<h2>Limits</h2><ul><li>Sign-in activity and sign-in logs need Entra ID P1 or P2; Conditional Access for workload identities needs Workload Identities Premium.</li>
+<li>Application permissions are read from the APIs the apps request plus Microsoft Graph, Exchange Online and SharePoint Online.</li>
 <li>Only app registrations owned by this tenant are listed, not enterprise apps from other publishers.</li></ul>`
 },
 fr:{
   edition:"Lecture seule · tourne dans votre navigateur", theme:"Thème", signOut:"Se déconnecter",
-  grpReport:"Rapport", grpSetup:"Configuration", navOverview:"Vue d'ensemble", navApps:"App registrations", navCleanup:"Plan de nettoyage", navConnect:"Connexion", navAbout:"À propos",
-  cnTitle:"Connexion au tenant", cnIntro:"Connectez-vous avec un compte d'administration. La page lit vos app registrations, leurs propriétaires, leurs secrets et certificats, et leur dernière connexion. Rien n'est écrit dans le tenant et rien ne sort de votre navigateur.",
+  grpReport:"Rapport", grpSetup:"Configuration", navOverview:"Vue d'ensemble", navApps:"App registrations", navSensitive:"Apps sensibles", navCleanup:"Plan de nettoyage", navConnect:"Connexion", navAbout:"À propos",
+  cnTitle:"Connexion au tenant", cnIntro:"Connectez-vous avec un compte d'administration. La page lit vos app registrations, leurs permissions, propriétaires, secrets et certificats, leur dernière connexion et les adresses IP d'où se connectent leurs principaux de service. Rien n'est écrit dans le tenant et rien ne sort de votre navigateur.",
   cnSignin:"Connexion", cnSigninSub:"Les valeurs sont enregistrées dans ce navigateur uniquement.",
   fTenant:"ID ou domaine du tenant", fTenantHelp:"GUID ou domaine principal, ex. contoso.onmicrosoft.com",
   fClient:"ID d'application (client)", fClientHelp:"L'app registration créée pour cette page (voir les étapes à droite).",
@@ -460,87 +535,153 @@ fr:{
   steps:[
     "Centre d'administration Entra → <b>Inscriptions d'applications</b> → <b>Nouvelle inscription</b>. Nom : <code>Entra App Cleanup</code>, locataire unique.",
     "<b>Authentification</b> → <b>Ajouter une plateforme</b> → <b>Application monopage</b> → collez l'URI de redirection affichée à gauche.",
-    "<b>Autorisations d'API</b> → Microsoft Graph → <b>Déléguées</b> : <code>Application.Read.All</code> et <code>AuditLog.Read.All</code>, puis <b>Accorder le consentement administrateur</b>.",
-    "Connectez-vous avec un compte qui a un rôle de lecture, par exemple <b>Lecteur général</b>, <b>Lecteur de rapports</b> ou <b>Lecteur de sécurité</b>. L'activité de connexion demande Entra ID P1 ou P2.",
+    "<b>Autorisations d'API</b> → Microsoft Graph → <b>Déléguées</b> : <code>Application.Read.All</code>, <code>AuditLog.Read.All</code> et <code>Directory.Read.All</code>, puis <b>Accorder le consentement administrateur</b>.",
+    "Connectez-vous avec un compte qui a un rôle de lecture, par exemple <b>Lecteur général</b>, ou <b>Lecteur de sécurité</b> avec <b>Lecteur de rapports</b>. L'activité et les journaux de connexion demandent Entra ID P1 ou P2.",
     "Copiez l'<b>ID d'application (client)</b> et l'<b>ID de l'annuaire (locataire)</b> dans le formulaire."
   ],
-  stApps:"App registrations et propriétaires", stSign:"Activité de connexion par app", stCred:"Dernière utilisation de chaque secret et certificat",
+  stApps:"App registrations et propriétaires", stSign:"Activité de connexion par app", stCred:"Dernière utilisation de chaque secret et certificat", stPerm:"Principaux de service et permissions d'application", stGrant:"Permissions déléguées (consentements)",
   stSkip:"indisponible", errSignNA:"L'activité de connexion est indisponible ({0}). La dernière connexion et le verdict de suppression ne peuvent pas être calculés : vérifiez le consentement AuditLog.Read.All, votre rôle et votre licence Entra ID P1/P2.",
-  errCredNA:"La dernière utilisation de chaque identifiant est indisponible ({0}). Tout le reste fonctionne.",
+  errCredNA:"La dernière utilisation de chaque identifiant est indisponible ({0}).", errPermNA:"Les permissions d'application sont indisponibles ({0}) : la sensibilité utilise les permissions demandées.", errGrantNA:"Les consentements délégués sont indisponibles ({0}) : vérifiez le consentement Directory.Read.All.",
   errAuth:"Échec de la connexion : {0}", errExpired:"Votre session a expiré. Reconnectez-vous pour relancer l'analyse.", errGraph:"Erreur Graph : {0}",
   needCfg:"Renseignez d'abord le tenant et l'ID client.",
   demoOn:"Données d'exemple : apps fictives pour découvrir la page.", demoExit:"Quitter la démo",
   ovIntro:"{0} app registrations analysées le {1}. Inactive signifie aucune connexion depuis {2} jours.",
-  kTotal:"App registrations", kDelete:"À supprimer", kRisk:"Secret valide, app inutilisée", kOwner:"Sans propriétaire actif", kReview:"À revoir",
-  kTotalF:"dans le tenant", kDeleteF:"jamais utilisées ou inactives", kRiskF:"à traiter en premier", kOwnerF:"aucun propriétaire ou tous désactivés", kReviewF:"utilisées, à corriger",
-  dSign:"Dernière connexion", dOwner:"Propriétaires", dCred:"Identifiants",
-  topTitle:"Liste prioritaire", topSub:"Les apps inutilisées qui ont encore un secret ou un certificat valide passent en premier : quiconque détient le secret peut encore s'en servir.",
-  appsIntro:"Sélectionnez une ligne pour voir les propriétaires, les identifiants et quoi faire.",
-  searchPh:"Rechercher par nom, app ID ou propriétaire", reset:"Réinitialiser", csv:"Exporter en CSV",
-  cName:"Application", cCreated:"Créée", cLast:"Dernière connexion", cOwners:"Propriétaires", cCreds:"Identifiants", cVerdict:"Verdict",
+  deckBtn:"Exporter en PowerPoint", csvAll:"Tout exporter (CSV)",
+  kTotal:"App registrations", kSens:"Apps sensibles", kDelete:"À supprimer", kRisk:"Secret valide, app inutilisée", kOwner:"Sans propriétaire actif", kUnres:"Sans restriction utilisateurs",
+  kTotalF:"dans le tenant", kSensF:"permissions critiques ou élevées", kDeleteF:"jamais utilisées ou inactives", kRiskF:"à traiter en premier", kOwnerF:"aucun propriétaire ou tous désactivés", kUnresF:"tout utilisateur peut s'y connecter",
+  dSign:"Dernière connexion", dOwner:"Propriétaires", dCred:"Identifiants", dTier:"Sensibilité",
+  topTitle:"Priorités", topSub:"Apps classées par la recommandation la plus critique, puis par sensibilité.",
+  appsIntro:"Sélectionnez une ligne pour voir les permissions, propriétaires, identifiants et recommandations.",
+  searchPh:"Rechercher par nom, app ID, propriétaire ou permission", reset:"Réinitialiser", csv:"Exporter en CSV",
+  cName:"Application", cCreated:"Créée", cLast:"Dernière connexion", cOwners:"Propriétaires", cCreds:"Identifiants", cVerdict:"Verdict", cTier:"Sensibilité", cPerms:"Permissions principales", cAssign:"Restriction utilisateurs", cIps:"IP connues", cReco:"Recommandation principale", cSev:"Criticité",
   showing:"{0} sur {1}", showMore:"Afficher {0} de plus",
-  allVerdict:"Tous les verdicts", allSign:"Toutes les connexions", allOwner:"Tous les propriétaires", allCred:"Tous les identifiants",
+  allVerdict:"Tous les verdicts", allSign:"Toutes les connexions", allOwner:"Tous les propriétaires", allCred:"Tous les identifiants", allTier:"Toutes les sensibilités", allKind:"App seule et déléguées",
+  k_app:"App seule", k_del:"Déléguées", k_both:"App seule + déléguées",
   v_delete:"Supprimer", v_review:"À revoir", v_ok:"À garder", v_unknown:"Inconnu",
   s_active:"Active", s_stale:"Inactive", s_never:"Jamais", s_unknown:"Inconnue", s_recent:"Récente, inutilisée",
   o_ok:"A un propriétaire", o_none:"Aucun propriétaire", o_disabled:"Propriétaires désactivés",
   c_active:"Secret valide", c_cert:"Certificat valide seul", c_expired:"Expirés uniquement", c_none:"Aucun", c_soon:"Expire bientôt",
+  l_crit:"Critique", l_high:"Élevée", l_med:"Moyenne", l_low:"Faible", l_none:"Aucune",
+  tierMin_crit:"Critiques seulement", tierMin_high:"Élevées et plus", tierMin_med:"Moyennes et plus",
+  asg_yes:"Affectation requise", asg_no:"Tout le monde", asg_na:"n/a",
   ago:"il y a {0} j", today:"aujourd'hui", never:"jamais", none:"aucun",
   fSecrets:"{0} secret(s)", fCerts:"{0} certif.", fExpired:"{0} expiré(s)",
-  tRisk:"Secret valide sur app inutilisée", tNoOwner:"Aucun propriétaire", tDisOwner:"Propriétaires désactivés", tExpired:"Identifiants expirés", tUnusedCred:"Identifiant jamais utilisé", tSoon:"Expire bientôt", tLong:"Secret valide plus de 2 ans", tMulti:"Multi-tenant",
-  flyFacts:"Résumé", flySign:"Activité de connexion", flyOwners:"Propriétaires", flyCreds:"Secrets et certificats", flyTodo:"Quoi faire", flyOpen:"Ouvrir dans Entra",
-  fCreatedL:"Créée", fAudience:"Audience", fLastL:"Dernière connexion", fVerdict:"Verdict", fAge:"Âge", fPublisher:"Domaine éditeur",
+  tRisk:"Secret valide sur app inutilisée", tNoOwner:"Aucun propriétaire", tDisOwner:"Propriétaires désactivés", tExpired:"Identifiants expirés", tUnusedCred:"Identifiant jamais utilisé", tSoon:"Expire bientôt", tLong:"Secret valide plus de 2 ans", tUnres:"Sans restriction utilisateurs", tMulti:"Multi-tenant", tAppOnly:"App seule", tDel:"Déléguées",
+  flyFacts:"Résumé", flySign:"Activité de connexion", flyOwners:"Propriétaires", flyCreds:"Secrets et certificats", flyReco:"Recommandations", flyPerms:"Permissions", flyOpen:"Ouvrir dans Entra", flyWid:"Accès conditionnel pour cette identité de charge de travail",
+  fCreatedL:"Créée", fAudience:"Audience", fLastL:"Dernière connexion", fVerdict:"Verdict", fPublisher:"Domaine éditeur", fTierL:"Sensibilité", fAsgL:"Restriction utilisateurs", fSpL:"Principal de service",
   sAny:"Toutes", sDelClient:"Déléguée (en client)", sDelRes:"Déléguée (en ressource)", sAppClient:"App seule (en client)", sAppRes:"App seule (en ressource)",
   crType:"Type", crName:"Nom", crEnd:"Expire", crUsed:"Dernier usage", crStatus:"Statut", secret:"Secret", cert:"Certificat",
   cr_active:"Valide", cr_expired:"Expiré", cr_soon:"Expire bientôt",
+  pType:"Type", pRes:"API", pPerm:"Permission", pLevel:"Niveau", pConsent:"Consentement", pAlt:"Moindre privilège",
+  pAdmin:"admin (tous les utilisateurs)", pUsers:"{0} utilisateur(s)", pRequested:"demandée, non accordée", pApp:"Application", pDel:"Déléguée", pNone:"Aucune permission.",
+  altSites:"Sites.Selected, limité aux sites nécessaires", altExo:"RBAC for Applications dans Exchange Online, limité à un groupe de boîtes", altEws:"Microsoft Graph avec RBAC for Applications (EWS est en cours de retrait)", altDir:"permissions granulaires (User.*, Group.*) ou un rôle limité à une unité administrative", altApp:"Application.ReadWrite.OwnedBy", altAu:"un rôle limité à une unité administrative", altRole:"aucune app ne devrait l'avoir hors d'un outil d'accès privilégié",
   disabled:"désactivé", sp:"principal de service",
-  todoDelete:"Aucune connexion depuis plus de {0} jours et créée il y a plus de {0} jours : confirmez avec le propriétaire, puis supprimez l'app. Une app supprimée reste restaurable 30 jours.",
-  todoRisk:"Retirez dès maintenant les secrets et certificats valides, même avant la décision de suppression : c'est là qu'est l'exposition.",
-  todoNoOwner:"Désignez au moins deux propriétaires pour que quelqu'un réponde de cette app.",
-  todoDisOwner:"Tous les propriétaires sont des comptes désactivés : désignez des propriétaires actifs.",
-  todoExpired:"Retirez les identifiants expirés : ils brouillent la lecture et cachent les vrais.",
-  todoUnused:"Un identifiant valide n'a jamais servi alors que l'app se connecte : c'est sans doute un reste, retirez-le.",
-  todoSoon:"Un identifiant expire bientôt : renouvelez-le, ou laissez-le expirer s'il ne sert plus.",
-  todoLong:"Un secret est valide plus de deux ans : préférez des secrets courts, un certificat ou une identité managée.",
-  todoOk:"Rien à nettoyer. À revoir au prochain passage.",
-  todoUnknown:"L'activité de connexion est indisponible : le verdict ne peut pas être calculé.",
-  todoRecent:"Créée il y a moins de {0} jours et pas encore utilisée : à revérifier plus tard.",
+  ipBtn:"Analyser les IP de connexion (30 jours)", ipRun:"Lecture des journaux de connexion…", ipNone:"Aucune connexion du principal de service sur les 30 derniers jours.", ipErr:"Journaux de connexion indisponibles : {0}",
+  ipHead:"{0} connexions depuis {1} adresse(s) IP sur les 30 derniers jours{2}.", ipTrunc:" (5 000 premiers événements seulement)",
+  ipIp:"Adresse IP", ipCount:"Connexions", ipLast:"Dernière vue", ipWhere:"Localisation", ipRanges:"Plages proposées",
+  caBtn:"Proposition d'accès conditionnel", caTitle:"Proposition d'accès conditionnel (identité de charge de travail)", caSub:"Emplacement nommé construit à partir des IP observées, et une stratégie qui bloque le principal de service en dehors. Créée en mode rapport seul. Demande Workload Identities Premium.",
+  ipAll:"Analyser les IP des apps app seule", caAll:"Toutes les propositions d'accès conditionnel", ipProgress:"{0}/{1} analysées…", ipDone:"{0} app(s) analysée(s).", caNone:"Analysez d'abord les IP.",
+  widTitle:"Identités de charge de travail : accès conditionnel par IP", widSub:"Pour les apps qui se connectent avec leur propre identité (app seule), lit les connexions de leur principal de service sur 30 jours, puis propose un emplacement nommé et une stratégie qui les bloque hors de ces IP. D'abord en rapport seul. Demande Workload Identities Premium.",
+  snIntro:"Apps classées par sensibilité : ce qu'elles peuvent faire avec les permissions réellement accordées, si elles agissent seules (app seule) ou pour un utilisateur (déléguées), et si n'importe quel utilisateur peut s'y connecter.",
+  sev_crit:"Critique", sev_high:"Élevée", sev_med:"Moyenne", sev_low:"Faible", sev_ok:"OK",
+  r_rmSecrets:"Retirez dès maintenant les secrets et certificats valides : l'app est inutilisée mais peut encore s'authentifier. À faire avant la décision de suppression.",
+  r_delete:"Aucune connexion depuis plus de {0} jours et créée il y a plus de {0} jours : confirmez avec le propriétaire, puis supprimez l'app. Une app supprimée reste restaurable 30 jours.",
+  r_reducePerms:"Réduisez les permissions d'application : {0}.",
+  r_caWid:"Limitez d'où l'app peut se connecter : accès conditionnel pour identités de charge de travail, blocage hors des IP connues (d'abord en rapport seul).",
+  r_caWidIps:"Limitez d'où l'app peut se connecter : {0} IP vues sur 30 jours, l'emplacement nommé et la stratégie de blocage sont prêts (d'abord en rapport seul).",
+  r_certInstead:"Remplacez le secret client par un certificat, un identifiant fédéré ou une identité managée.",
+  r_assignReq:"Activez « Affectation requise » sur l'application d'entreprise et affectez un groupe : aujourd'hui, tout utilisateur du tenant peut s'y connecter.",
+  r_caUser:"Les permissions déléguées sont acceptables : l'app n'agit que dans les droits de l'utilisateur connecté. Ciblez-la dans une stratégie d'accès conditionnel utilisateurs (MFA, appareil conforme) et gardez le consentement limité.",
+  r_adminConsent:"Revoyez le consentement administrateur accordé pour tous les utilisateurs sur : {0}.",
+  r_noOwner:"Désignez au moins deux propriétaires pour que quelqu'un réponde de cette app.",
+  r_disOwner:"Tous les propriétaires sont des comptes désactivés : désignez des propriétaires actifs.",
+  r_multiTenant:"L'app est multi-tenant : vérifiez que des comptes d'autres tenants ont vraiment besoin de s'y connecter.",
+  r_expired:"Retirez les identifiants expirés : ils brouillent la lecture et cachent les vrais.",
+  r_soon:"Un identifiant expire bientôt : renouvelez-le, ou laissez-le expirer s'il ne sert plus.",
+  r_long:"Un secret est valide plus de deux ans : préférez des secrets courts, un certificat ou une identité managée.",
+  r_unusedCred:"Un identifiant valide n'a jamais servi alors que l'app se connecte : sans doute un reste, retirez-le.",
+  r_unusedReq:"Retirez les permissions demandées jamais accordées : {0}.",
+  r_recent:"Créée il y a moins de {0} jours et pas encore utilisée : à revérifier plus tard.",
+  r_unknown:"L'activité de connexion est indisponible : le verdict ne peut pas être calculé.",
+  r_ok:"Rien à faire. À revoir au prochain passage.",
+  rs_rmSecrets:"Retirer les secrets (app inutilisée)", rs_delete:"Supprimer l'app inutilisée", rs_reducePerms:"Réduire les permissions d'app", rs_caWid:"AC identité de charge (IP)", rs_certInstead:"Secret → certificat / MI", rs_assignReq:"Exiger l'affectation", rs_caUser:"AC utilisateurs (déléguées)", rs_adminConsent:"Revoir le consentement admin", rs_noOwner:"Désigner des propriétaires", rs_disOwner:"Remplacer les propriétaires désactivés", rs_multiTenant:"Vérifier le multi-tenant", rs_expired:"Retirer les identifiants expirés", rs_soon:"Renouveler l'identifiant", rs_long:"Raccourcir la durée du secret", rs_unusedCred:"Retirer l'identifiant inutilisé", rs_unusedReq:"Nettoyer les permissions demandées", rs_recent:"À revérifier plus tard", rs_unknown:"Données de connexion manquantes", rs_ok:"Rien à faire",
   clIntro:"Les apps sur lesquelles agir, regroupées par action. Rien n'est modifié depuis cette page : exportez la liste, validez avec les propriétaires, puis agissez.",
   clA:"1. Retirer les secrets des apps inutilisées", clASub:"L'exposition actuelle : des apps inutilisées qui peuvent encore s'authentifier.",
   clB:"2. Supprimer les apps inutilisées", clBSub:"Jamais utilisées ou inactives, plus anciennes que le seuil.",
   clC:"3. Donner un propriétaire", clCSub:"Apps encore utilisées sans propriétaire actif.",
-  clD:"4. Retirer les identifiants expirés", clDSub:"Apps qui portent des secrets ou certificats expirés.",
+  clD:"4. Restreindre les utilisateurs", clDSub:"Apps auxquelles tout utilisateur du tenant peut se connecter.",
   clEmpty:"Rien ici.", clMore:"et {0} de plus",
   clScriptTitle:"Script de nettoyage", clScriptSub:"Génère un script PowerShell Microsoft Graph pour les apps à supprimer. Chaque ligne de suppression est commentée : vous décommentez ce que vous avez validé. Les apps supprimées restent 30 jours dans la corbeille.",
   clScriptBtn:"Générer le script", clCsvBtn:"Exporter les candidates (CSV)",
   scriptTitle:"Script de nettoyage (PowerShell)", scriptSub:"Relisez chaque ligne. Les lignes de suppression sont commentées exprès.",
-  aboutHtml:`<h2>Pourquoi</h2><p>Les app registrations s'accumulent : POC, anciennes intégrations, apps de personnes parties. Chacune qui garde un secret valide est une porte d'entrée dans le tenant que personne ne surveille. Cette page les liste, montre si elles servent encore, à qui elles appartiennent et si un secret est encore valide, puis propose un ordre de nettoyage.</p>
-<h2>Comment le verdict est calculé</h2><ul>
-<li><b>Supprimer</b> : aucune connexion (déléguée ou app seule, en client ou en ressource) depuis plus que le seuil, et l'app est plus ancienne que le seuil.</li>
-<li><b>À revoir</b> : l'app sert mais n'a pas de propriétaire actif, porte des identifiants expirés, un identifiant jamais utilisé, un identifiant qui expire bientôt ou un secret valide plus de deux ans.</li>
-<li><b>À garder</b> : utilisée, avec propriétaire, propre.</li>
-<li><b>Inconnu</b> : l'activité de connexion n'a pas pu être lue.</li></ul>
-<h2>Sécurité</h2><ul><li>Permissions déléguées uniquement, en lecture : <code>Application.Read.All</code>, <code>AuditLog.Read.All</code>.</li>
-<li>Pas de backend, pas de télémétrie. Le jeton reste dans cet onglet (sessionStorage) et est effacé à la déconnexion.</li>
+  deckBuilding:"Création du deck…", deckDone:"Deck téléchargé", deckFail:"Impossible de créer le deck (la bibliothèque PowerPoint n'a pas pu se charger).",
+  dTitle:"Revue des app registrations", dSyn:"Où on en est", dSynSub:"{0} app registrations · inactive après {1} jours", dPlan:"Plan d'action", dPlanSub:"Recommandations regroupées par action, les plus critiques d'abord", dApps:"Apps par criticité", dAppsSub:"{0} apps avec une action · page {1}/{2}", dCard:"App critique", dWid:"Accès conditionnel pour identités de charge de travail", dWidSub:"Emplacements nommés issus de 30 jours de journaux · stratégies en rapport seul", dWidNone:"Pas encore d'analyse IP : lancez « Analyser les IP des apps app seule » avant d'exporter.", dMethod:"Méthode et limites",
+  dApps_n:"Apps", dExamples:"Exemples", dBySev:"Apps par criticité", dByTier:"Apps par sensibilité", dGen:"Généré par Entra App Cleanup", dRanges:"Plages", dPolicy:"Stratégie",
+  dMethodItems:["Supprimer : aucune connexion d'aucun type au-delà du seuil, app plus ancienne que le seuil.","Sensibilité : niveau le plus élevé parmi les permissions accordées (une permission d'application pèse un niveau de plus qu'une déléguée).","Criticité : recommandation la plus grave pour l'app.","IP : connexions du principal de service sur 30 jours ; une app hébergée sur des IP cloud dynamiques demande d'abord une sortie fixe.","Toujours confirmer avec le propriétaire avant de supprimer : l'activité n'est conservée que sur une durée limitée."],
+  aboutHtml:`<h2>Pourquoi</h2><p>Les app registrations s'accumulent : POC, anciennes intégrations, apps de personnes parties. Chacune qui garde un secret valide est une porte d'entrée que personne ne surveille, et les plus dangereuses sont celles qui ont de fortes permissions d'application. Cette page les liste, montre si elles servent, à qui elles appartiennent, ce qu'elles peuvent faire, si n'importe quel utilisateur peut s'y connecter, puis propose des recommandations classées par criticité.</p>
+<h2>Comment c'est calculé</h2><ul>
+<li><b>Verdict</b> : <i>Supprimer</i> quand aucune connexion d'aucun type (déléguée ou app seule, en client ou en ressource) au-delà du seuil et que l'app est plus ancienne que le seuil. <i>À revoir</i> quand elle sert mais a quelque chose à corriger. <i>À garder</i> sinon.</li>
+<li><b>Sensibilité</b> : niveau le plus élevé parmi les permissions accordées. Critique : contrôle de l'annuaire, des rôles, des apps, de toute la messagerie ou de tous les fichiers (ex. RoleManagement.ReadWrite.Directory, Application.ReadWrite.All, Mail.ReadWrite, Sites.FullControl.All, full_access_as_app). Une permission déléguée compte un niveau de moins car elle reste dans les droits de l'utilisateur.</li>
+<li><b>Restriction utilisateurs</b> : « Affectation requise » activée ou non sur l'application d'entreprise. Désactivée, tout utilisateur du tenant peut s'y connecter.</li>
+<li><b>Accès conditionnel Workload ID</b> : pour les apps app seule, les IP viennent des connexions du principal de service sur 30 jours. Les IPv4 sont regroupées en /24 quand au moins trois partagent le même.</li></ul>
+<h2>Sécurité</h2><ul><li>Permissions déléguées uniquement, en lecture : <code>Application.Read.All</code>, <code>AuditLog.Read.All</code>, <code>Directory.Read.All</code>.</li>
+<li>Pas de backend, pas de télémétrie. Le jeton reste dans cet onglet (sessionStorage) et est effacé à la déconnexion. La bibliothèque PowerPoint n'est chargée qu'au moment d'exporter un deck.</li>
 <li>Flux authorization code avec PKCE, sans secret client.</li></ul>
-<h2>Limites</h2><ul><li>L'activité de connexion vient des rapports Graph beta et demande Entra ID P1 ou P2.</li>
-<li>L'activité est conservée sur une période limitée : une app utilisée une fois par an peut paraître inactive. Confirmez toujours avec le propriétaire.</li>
+<h2>Limites</h2><ul><li>L'activité et les journaux de connexion demandent Entra ID P1 ou P2 ; l'accès conditionnel pour identités de charge de travail demande Workload Identities Premium.</li>
+<li>Les permissions d'application sont lues sur les API demandées par les apps, plus Microsoft Graph, Exchange Online et SharePoint Online.</li>
 <li>Seules les app registrations de ce tenant sont listées, pas les applications d'entreprise d'autres éditeurs.</li></ul>`
 }};
+
+
 let LANG = LS.get("lang", (navigator.language || "en").toLowerCase().startsWith("fr") ? "fr" : "en");
-const t = (k, ...a) => { let s = (T[LANG][k] ?? T.en[k] ?? k); a.forEach((v, i) => s = s.replace(new RegExp("\\{" + i + "\\}", "g"), v)); return s; };
+const t = (k, ...a) => { let s = (T[LANG][k] ?? T.en[k] ?? k); if(typeof s !== "string") return s; a.forEach((v, i) => s = s.replace(new RegExp("\\{" + i + "\\}", "g"), v)); return s; };
 const fmtDate = d => d ? new Date(d).toLocaleDateString(LANG === "fr" ? "fr-FR" : "en-GB", {year:"numeric", month:"short", day:"numeric"}) : "—";
 const daysSince = d => d ? Math.floor((Date.now() - new Date(d).getTime()) / DAY) : null;
 const agoTxt = d => { if(!d) return t("never"); const n = daysSince(d); return n <= 0 ? t("today") : t("ago", n); };
 
+/* ---------------- permission knowledge ---------------- */
+const RES = {GRAPH:"00000003-0000-0000-c000-000000000000", EXO:"00000002-0000-0ff1-ce00-000000000000", SPO:"00000003-0000-0ff1-ce00-000000000000", AADG:"00000002-0000-0000-c000-000000000000"};
+const LVN = ["none", "low", "med", "high", "crit"];
+const SEVN = ["ok", "low", "med", "high", "crit"];
+const CRIT = new Set(["RoleManagement.ReadWrite.Directory", "RoleAssignmentSchedule.ReadWrite.Directory", "RoleEligibilitySchedule.ReadWrite.Directory", "AppRoleAssignment.ReadWrite.All",
+  "Application.ReadWrite.All", "Directory.ReadWrite.All", "Domain.ReadWrite.All", "Organization.ReadWrite.All", "Policy.ReadWrite.ConditionalAccess", "Policy.ReadWrite.AuthenticationMethod",
+  "Policy.ReadWrite.PermissionGrant", "Policy.ReadWrite.ApplicationConfiguration", "UserAuthenticationMethod.ReadWrite.All", "User.ReadWrite.All", "Group.ReadWrite.All", "GroupMember.ReadWrite.All",
+  "ServicePrincipalEndpoint.ReadWrite.All", "DelegatedPermissionGrant.ReadWrite.All", "IdentityProvider.ReadWrite.All", "PrivilegedAccess.ReadWrite.AzureADGroup",
+  "PrivilegedAssignmentSchedule.ReadWrite.AzureADGroup", "Mail.ReadWrite", "Mail.Send", "MailboxSettings.ReadWrite", "Files.ReadWrite.All", "Sites.FullControl.All", "Sites.ReadWrite.All",
+  "full_access_as_app", "Exchange.ManageAsApp", "DeviceManagementManagedDevices.PrivilegedOperations.All", "DeviceManagementRBAC.ReadWrite.All", "DeviceManagementConfiguration.ReadWrite.All",
+  "Directory.AccessAsUser.All", "EWS.AccessAsUser.All"]);
+const HIGH = new Set(["Mail.Read", "Mail.ReadBasic.All", "Calendars.ReadWrite", "Contacts.ReadWrite", "Files.Read.All", "Sites.Read.All", "Sites.Manage.All", "Chat.Read.All", "Chat.ReadWrite.All",
+  "ChannelMessage.Read.All", "Notes.Read.All", "Notes.ReadWrite.All", "Application.ReadWrite.OwnedBy", "User.EnableDisableAccount.All", "User-PasswordProfile.ReadWrite.All",
+  "IdentityRiskyUser.ReadWrite.All", "AuditLog.Read.All", "Directory.Read.All", "MailboxSettings.Read", "OnlineMeetingTranscript.Read.All", "CallRecords.Read.All", "BitlockerKey.Read.All",
+  "DeviceManagementManagedDevices.ReadWrite.All", "Calendars.Read", "Contacts.Read"]);
+const LOWDEL = new Set(["openid", "profile", "email", "offline_access", "User.Read", "User.ReadBasic.All"]);
+function permLevel(value, kind){
+  if(!value) return 1;
+  let l;
+  if(CRIT.has(value)) l = 4;
+  else if(HIGH.has(value)) l = 3;
+  else if(/\.Selected$|^Sites\.Selected$/.test(value)) l = 1;
+  else if(/ReadWrite.*\.All$|\.Write\.All$|FullControl|ManageAsApp/.test(value)) l = 3;
+  else if(/\.Read(Basic)?\.All$/.test(value)) l = 2;
+  else l = 1;
+  if(kind === "del"){
+    if(LOWDEL.has(value)) return 1;
+    l = Math.max(1, l - 1);
+  }
+  return l;
+}
+const ALT = [[/^Sites\.(FullControl|ReadWrite|Read|Manage)\.All$|^Files\.(ReadWrite|Read)\.All$/, "altSites"], [/^(Mail|Calendars|Contacts|MailboxSettings)\./, "altExo"],
+  [/^full_access_as_app$/, "altEws"], [/^Directory\.ReadWrite\.All$/, "altDir"], [/^Application\.ReadWrite\.All$/, "altApp"], [/^(User|Group|GroupMember)\.ReadWrite\.All$/, "altAu"],
+  [/^(RoleManagement|RoleAssignmentSchedule|RoleEligibilitySchedule)\.ReadWrite\.Directory$/, "altRole"]];
+const altOf = v => (ALT.find(([re]) => re.test(v)) || [])[1];
+
 /* ---------------- state ---------------- */
 const S = {
   cfg: Object.assign({tenant:"", clientId:"", inactive:90, soon:30}, LS.get("cfg", {})),
-  raw: null,           // { apps, signins, creds, signOk, credOk, signErr, credErr, scannedAt, demo }
-  apps: [],            // evaluated
-  view: "connect",
-  sort: {k:"prio", d:1},
-  shown: 100,
-  f: {q:"", verdict:"", sign:"", owner:"", cred:""}
+  raw: null, apps: [], view: "connect",
+  sort: {k:"risk", d:1}, shown: 100,
+  f: {q:"", verdict:"", tier:"", sign:"", owner:"", cred:"", flag:""},
+  sn: {tier:"3", kind:""}
 };
 
 /* ---------------- theme & lang ---------------- */
@@ -549,7 +690,7 @@ $("#themeBtn").onclick = () => {
   const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme:dark)").matches;
   LS.set("theme", dark ? "light" : "dark"); applyTheme();
 };
-$$(".langsw button").forEach(b => b.onclick = () => { LANG = b.dataset.lang; LS.set("lang", LANG); renderAll(); });
+$$(".langsw button").forEach(b => b.onclick = () => { LANG = b.dataset.lang; LS.set("lang", LANG); if(S.raw) evaluate(); renderAll(); });
 function applyI18n(){
   document.documentElement.lang = LANG;
   $$("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
@@ -559,16 +700,25 @@ function applyI18n(){
   $("#aboutBody").innerHTML = T[LANG].aboutHtml;
 }
 
-/* ---------------- banner & toast ---------------- */
+/* ---------------- banner, toast, files ---------------- */
 function banner(text, kind = "", actHtml = ""){
   const b = $("#banner"); if(!text){ b.hidden = true; return; }
   b.className = "banner " + kind; $("#bannerText").textContent = text; $("#bannerAct").innerHTML = actHtml; b.hidden = false;
 }
-function toast(msg){ const e = $("#toast"); e.textContent = msg; e.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => e.classList.remove("on"), 1600); }
+function toast(msg){ const e = $("#toast"); e.textContent = msg; e.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => e.classList.remove("on"), 1800); }
 async function copy(txt){ try{ await navigator.clipboard.writeText(txt); toast(t("copied")); }catch{ const ta = document.createElement("textarea"); ta.value = txt; document.body.append(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast(t("copied")); } }
 function download(name, text, type = "text/plain"){
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
+const stamp = () => new Date().toISOString().slice(0, 10);
+function showModal(title, sub, text, file){
+  $("#modalTitle").textContent = title; $("#modalSub").textContent = sub; $("#modalText").value = text;
+  $("#modalDl").onclick = () => download(file, $("#modalText").value);
+  $("#modal").classList.add("on");
+}
+function closeModal(){ $("#modal").classList.remove("on"); }
+$("#modalClose").onclick = closeModal;
+$("#modalCopy").onclick = () => copy($("#modalText").value);
 
 /* ---------------- auth (PKCE, redirect flow) ---------------- */
 const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -607,7 +757,7 @@ async function handleRedirect(){
 async function token(){
   const tk = SS.get("tok"); if(!tk) return null;
   if(Date.now() < tk.exp) return tk.at;
-  if(tk.rt){ // SPA refresh tokens are allowed (24 h) and must be redeemed from the same origin
+  if(tk.rt){ // SPA refresh tokens (24 h) must be redeemed from the same origin
     const body = new URLSearchParams({client_id:tk.clientId, grant_type:"refresh_token", refresh_token:tk.rt, scope:SCOPES});
     const r = await fetch(`https://login.microsoftonline.com/${encodeURIComponent(tk.tenant)}/oauth2/v2.0/token`,
       {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body});
@@ -635,9 +785,10 @@ async function g(url){
   }
   throw new Error("throttled");
 }
-async function gAll(url, onPage){
-  let out = [];
-  while(url){ const j = await g(url); out = out.concat(j.value || []); onPage && onPage(out.length); url = j["@odata.nextLink"]; }
+async function gAll(url, onPage, maxPages = Infinity){
+  let out = [], pages = 0;
+  while(url && pages < maxPages){ const j = await g(url); out = out.concat(j.value || []); pages++; onPage && onPage(out.length); url = j["@odata.nextLink"]; }
+  out.truncated = !!url;
   return out;
 }
 
@@ -655,32 +806,131 @@ function prog(id, state, count = ""){
 async function scan(){
   banner("");
   $("#signInBtn").disabled = $("#reloadBtn").disabled = true;
-  progressUI(["Apps", "Sign", "Cred"]);
-  const raw = {apps:[], signins:[], creds:[], signOk:false, credOk:false, signErr:"", credErr:"", scannedAt:new Date().toISOString(), demo:false};
+  progressUI(["Apps", "Sign", "Cred", "Perm", "Grant"]);
+  const raw = {apps:[], signins:[], creds:[], sps:[], resources:[], assignments:[], grants:[], ips:{},
+    signOk:false, credOk:false, permOk:false, grantOk:false, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:false};
+  const soft = async (id, okKey, errKey, fn) => {
+    prog(id, "run");
+    try{ const n = await fn(); raw[okKey] = true; prog(id, "done", n); }
+    catch(e){ if(e.expired) throw e; raw[errKey] = e.message; prog(id, "warn", t("stSkip")); }
+  };
   try{
     prog("Apps", "run");
-    const sel = "id,appId,displayName,createdDateTime,signInAudience,publisherDomain,passwordCredentials,keyCredentials";
+    const sel = "id,appId,displayName,createdDateTime,signInAudience,publisherDomain,passwordCredentials,keyCredentials,requiredResourceAccess";
     const base = `/v1.0/applications?$select=${sel}&$top=100&$expand=`;
     try{ raw.apps = await gAll(base + "owners($select=id,displayName,userPrincipalName,accountEnabled)", n => prog("Apps", "run", n)); }
     catch(e){ if(e.expired) throw e; raw.apps = await gAll(base + "owners", n => prog("Apps", "run", n)); }
     prog("Apps", "done", raw.apps.length);
 
-    prog("Sign", "run");
-    try{ raw.signins = await gAll("/beta/reports/servicePrincipalSignInActivities", n => prog("Sign", "run", n)); raw.signOk = true; prog("Sign", "done", raw.signins.length); }
-    catch(e){ if(e.expired) throw e; raw.signErr = e.message; prog("Sign", "warn", t("stSkip")); }
+    await soft("Sign", "signOk", "signErr", async () => { raw.signins = await gAll("/beta/reports/servicePrincipalSignInActivities", n => prog("Sign", "run", n)); return raw.signins.length; });
+    await soft("Cred", "credOk", "credErr", async () => { raw.creds = await gAll("/beta/reports/appCredentialSignInActivities", n => prog("Cred", "run", n)); return raw.creds.length; });
 
-    prog("Cred", "run");
-    try{ raw.creds = await gAll("/beta/reports/appCredentialSignInActivities", n => prog("Cred", "run", n)); raw.credOk = true; prog("Cred", "done", raw.creds.length); }
-    catch(e){ if(e.expired) throw e; raw.credErr = e.message; prog("Cred", "warn", t("stSkip")); }
+    let ourSp = new Set();
+    await soft("Perm", "permOk", "permErr", async () => {
+      raw.sps = await gAll("/v1.0/servicePrincipals?$select=id,appId,displayName,appRoleAssignmentRequired,servicePrincipalType&$top=999", n => prog("Perm", "run", n));
+      const spByApp = new Map(raw.sps.map(s => [(s.appId || "").toLowerCase(), s]));
+      ourSp = new Set(raw.apps.map(a => spByApp.get((a.appId || "").toLowerCase())?.id).filter(Boolean));
+      const resApps = new Set(Object.values(RES));
+      raw.apps.forEach(a => (a.requiredResourceAccess || []).forEach(r => resApps.add((r.resourceAppId || "").toLowerCase())));
+      let i = 0;
+      for(const ra of resApps){
+        const sp = spByApp.get(ra); i++; if(!sp) continue;
+        prog("Perm", "run", `${i}/${resApps.size}`);
+        const d = await g(`/v1.0/servicePrincipals/${sp.id}?$select=id,appId,displayName,appRoles,oauth2PermissionScopes`);
+        raw.resources.push({id:d.id, appId:d.appId, name:d.displayName, roles:Object.fromEntries((d.appRoles || []).map(r => [r.id, r.value])), scopes:Object.fromEntries((d.oauth2PermissionScopes || []).map(s => [s.id, s.value]))});
+        const asg = await gAll(`/v1.0/servicePrincipals/${sp.id}/appRoleAssignedTo?$top=999`);
+        asg.forEach(x => { if(ourSp.has(x.principalId)) raw.assignments.push({principalId:x.principalId, resourceId:x.resourceId, appRoleId:x.appRoleId}); });
+      }
+      return `${raw.assignments.length} · ${raw.resources.length} API`;
+    });
+    await soft("Grant", "grantOk", "grantErr", async () => {
+      const all = await gAll("/v1.0/oauth2PermissionGrants?$top=999", n => prog("Grant", "run", n));
+      raw.grants = all.filter(x => !ourSp.size || ourSp.has(x.clientId)).map(x => ({clientId:x.clientId, resourceId:x.resourceId, scope:x.scope, consentType:x.consentType}));
+      return raw.grants.length;
+    });
 
     S.raw = raw; evaluate(); renderAll(); go("overview");
   }catch(e){
     if(e.expired){ banner(t("errExpired"), "err"); SS.del("tok"); renderAll(); }
     else banner(t("errGraph", e.message), "err");
-    $$("#progress .row").forEach(r => { if(r.classList.contains("run")) prog(r.id.slice(3), "err"); });
+    $$("#progress .row.run").forEach(r => prog(r.id.slice(3), "err"));
   }finally{
     $("#signInBtn").disabled = $("#reloadBtn").disabled = false;
   }
+}
+
+/* ---------------- IP analysis (service principal sign-in logs) ---------------- */
+function expand6(ip){
+  const [h, tl] = ip.split("::"); const hs = h ? h.split(":") : [], ts = tl !== undefined ? (tl ? tl.split(":") : []) : [];
+  const fill = tl !== undefined ? Array(Math.max(0, 8 - hs.length - ts.length)).fill("0") : [];
+  return [...hs, ...fill, ...ts].map(x => x.padStart(4, "0"));
+}
+function toRanges(ips){
+  const out = [], g4 = new Map(), g6 = new Map();
+  ips.forEach(x => {
+    if(/^\d+\.\d+\.\d+\.\d+$/.test(x.ip)){ const k = x.ip.split(".").slice(0, 3).join("."); (g4.get(k) || g4.set(k, []).get(k)).push(x); }
+    else if(x.ip.includes(":")){ const k = expand6(x.ip).slice(0, 4).join(":"); (g6.get(k) || g6.set(k, []).get(k)).push(x); }
+  });
+  g4.forEach((L, k) => L.length >= 3 ? out.push({cidr:k + ".0/24", v:4}) : L.forEach(x => out.push({cidr:x.ip + "/32", v:4})));
+  g6.forEach((L, k) => L.length >= 3 ? out.push({cidr:k + "::/64", v:6}) : L.forEach(x => out.push({cidr:x.ip + "/128", v:6})));
+  return out;
+}
+async function fetchIps(a){
+  if(S.raw.demo) return demoIps(a);
+  const since = new Date(Date.now() - 30 * DAY).toISOString().slice(0, 19) + "Z";
+  const filter = `createdDateTime ge ${since} and appId eq '${a.appId}' and signInEventTypes/any(t: t eq 'servicePrincipal')`;
+  const ev = await gAll(`/beta/auditLogs/signIns?$filter=${encodeURIComponent(filter)}&$top=1000`, null, 5);
+  const m = new Map();
+  ev.forEach(e => {
+    const ip = e.ipAddress; if(!ip) return;
+    const x = m.get(ip) || {ip, count:0, last:null, where:new Set(), fail:0};
+    x.count++; if(!x.last || e.createdDateTime > x.last) x.last = e.createdDateTime;
+    const loc = [e.location?.city, e.location?.countryOrRegion].filter(Boolean).join(", "); if(loc) x.where.add(loc);
+    if(e.status?.errorCode) x.fail++;
+    m.set(ip, x);
+  });
+  const ips = [...m.values()].map(x => ({...x, where:[...x.where].join(" · ")})).sort((p, q) => q.count - p.count);
+  return {at:new Date().toISOString(), events:ev.length, truncated:ev.truncated, ips, ranges:toRanges(ips)};
+}
+async function analyzeIps(a){
+  try{ S.raw.ips[a.appId] = await fetchIps(a); }
+  catch(e){ if(e.expired){ banner(t("errExpired"), "err"); throw e; } S.raw.ips[a.appId] = {err:e.message, at:new Date().toISOString(), ips:[], ranges:[]}; }
+}
+const caNames = a => ({loc:`WID - ${a.name} - known IPs`, pol:`WID - ${a.name} - block outside known IPs`});
+function caObjects(a){
+  const ip = a.ipInfo; const n = caNames(a);
+  const loc = {"@odata.type":"#microsoft.graph.ipNamedLocation", displayName:n.loc, isTrusted:false,
+    ipRanges:ip.ranges.map(r => ({"@odata.type":r.v === 4 ? "#microsoft.graph.iPv4CidrRange" : "#microsoft.graph.iPv6CidrRange", cidrAddress:r.cidr}))};
+  const pol = {displayName:n.pol, state:"enabledForReportingButNotEnforced",
+    conditions:{clientApplications:{includeServicePrincipals:[a.spId]}, applications:{includeApplications:["All"]},
+      locations:{includeLocations:["All"], excludeLocations:["<NAMED_LOCATION_ID>"]}},
+    grantControls:{operator:"OR", builtInControls:["block"]}};
+  return {loc, pol};
+}
+function caScript(list){
+  const fr = LANG === "fr";
+  const L = [
+    "# Entra App Cleanup - " + (fr ? "accès conditionnel pour identités de charge de travail" : "Conditional Access for workload identities") + " - " + new Date().toISOString(),
+    "# " + (fr ? "Prérequis : licences Workload Identities Premium, rôle Administrateur de l'accès conditionnel." : "Requires: Workload Identities Premium licences, Conditional Access Administrator role."),
+    "# " + (fr ? "Les stratégies sont créées en mode rapport seul (enabledForReportingButNotEnforced) : vérifiez l'onglet Rapport seul des journaux avant de les activer." : "Policies are created in report-only mode (enabledForReportingButNotEnforced): check the Report-only tab of the sign-in logs before turning them on."),
+    "",
+    "# " + (fr ? "Connexion à Graph avec le droit de créer emplacements nommés et stratégies d'accès conditionnel" : "Sign in to Graph with the right to create named locations and Conditional Access policies"),
+    "Connect-MgGraph -Scopes 'Policy.ReadWrite.ConditionalAccess','Policy.Read.All' -NoWelcome",
+    ""];
+  list.forEach(a => {
+    const {loc, pol} = caObjects(a);
+    L.push(`# ---- ${a.name} | appId ${a.appId} | SP ${a.spId} | ${a.ipInfo.ips.length} IP, ${a.ipInfo.events} sign-ins / 30 d ----`);
+    L.push("# " + (fr ? "1. Crée l'emplacement nommé avec les plages IP observées, et garde son id dans $loc" : "1. Create the named location with the observed IP ranges and keep its id in $loc"));
+    L.push("$loc = Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/identity/conditionalAccess/namedLocations' -ContentType 'application/json' -Body @'");
+    L.push(JSON.stringify(loc, null, 2)); L.push("'@");
+    L.push("# " + (fr ? "2. Prépare la stratégie : bloque ce principal de service partout sauf depuis l'emplacement nommé" : "2. Prepare the policy: block this service principal everywhere except from the named location"));
+    L.push("$policy = @'"); L.push(JSON.stringify(pol, null, 2)); L.push("'@");
+    L.push("# " + (fr ? "3. Remplace l'id factice par celui de l'emplacement créé, puis crée la stratégie" : "3. Replace the placeholder with the id of the location just created, then create the policy"));
+    L.push("$policy = $policy.Replace('<NAMED_LOCATION_ID>', $loc.id)");
+    L.push("Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies' -ContentType 'application/json' -Body $policy | Out-Null");
+    L.push("");
+  });
+  return L.join("\r\n");
 }
 
 /* ---------------- evaluation ---------------- */
@@ -690,10 +940,15 @@ function evaluate(){
   const sMap = new Map(); R.signins.forEach(s => s.appId && sMap.set(s.appId.toLowerCase(), s));
   const cMap = new Map();
   R.creds.forEach(c => { if(!c.keyId) return; const d = c.signInActivity?.lastSignInDateTime || null; const prev = cMap.get(c.keyId); if(prev === undefined || (d && (!prev || d > prev))) cMap.set(c.keyId, d); });
+  const spBy = new Map(R.sps.map(s => [(s.appId || "").toLowerCase(), s]));
+  const resById = new Map(R.resources.map(r => [r.id, r])), resByApp = new Map(R.resources.map(r => [(r.appId || "").toLowerCase(), r]));
+  const asgBy = new Map(); R.assignments.forEach(x => (asgBy.get(x.principalId) || asgBy.set(x.principalId, []).get(x.principalId)).push(x));
+  const grBy = new Map(); R.grants.forEach(x => (grBy.get(x.clientId) || grBy.set(x.clientId, []).get(x.clientId)).push(x));
   const maxD = arr => arr.filter(Boolean).sort().pop() || null;
 
   S.apps = R.apps.map(a => {
-    const s = sMap.get((a.appId || "").toLowerCase());
+    const key = (a.appId || "").toLowerCase();
+    const s = sMap.get(key);
     const acts = s ? {
       any: s.lastSignInActivity?.lastSignInDateTime,
       delClient: s.delegatedClientSignInActivity?.lastSignInDateTime,
@@ -704,9 +959,10 @@ function evaluate(){
     const age = daysSince(a.createdDateTime) ?? 9999;
     const recent = age < inact;
 
+    /* credentials */
     const creds = [
       ...(a.passwordCredentials || []).map(c => ({type:"secret", keyId:c.keyId, name:c.displayName || (c.hint ? c.hint + "…" : ""), start:c.startDateTime, end:c.endDateTime})),
-      ...(a.keyCredentials || []).map(c => ({type:"cert", keyId:c.keyId, name:c.displayName || c.customKeyIdentifier || "", start:c.startDateTime, end:c.endDateTime, usage:c.usage}))
+      ...(a.keyCredentials || []).map(c => ({type:"cert", keyId:c.keyId, name:c.displayName || "", start:c.startDateTime, end:c.endDateTime}))
     ].map(c => {
       const left = c.end ? (new Date(c.end).getTime() - now) / DAY : -1;
       c.status = left < 0 ? "expired" : left <= soon ? "soon" : "active";
@@ -715,15 +971,51 @@ function evaluate(){
       return c;
     });
     const valid = creds.filter(c => c.status !== "expired");
-    const validSecrets = valid.filter(c => c.type === "secret").length;
-    const validCerts = valid.filter(c => c.type === "cert").length;
+    const validSecrets = valid.filter(c => c.type === "secret").length, validCerts = valid.filter(c => c.type === "cert").length;
     const expired = creds.filter(c => c.status === "expired").length;
 
+    /* owners */
     const owners = (a.owners || []).map(o => ({name:o.displayName || o.userPrincipalName || o.id, upn:o.userPrincipalName || "",
       isSp:(o["@odata.type"] || "").includes("servicePrincipal"), disabled:o.accountEnabled === false}));
     const ownerState = owners.length === 0 ? "none" : owners.every(o => o.disabled) ? "disabled" : "ok";
 
-    let sign = !R.signOk ? "unknown" : !last ? "never" : daysSince(last) > inact ? "stale" : "active";
+    /* permissions */
+    const sp = spBy.get(key);
+    const perms = [];
+    const findP = (kind, res, value) => perms.find(p => p.kind === kind && p.res === res && p.value === value);
+    if(sp){
+      (asgBy.get(sp.id) || []).forEach(x => { const r = resById.get(x.resourceId); const v = r?.roles[x.appRoleId] || x.appRoleId; const res = r?.name || x.resourceId;
+        if(!findP("app", res, v)) perms.push({kind:"app", res, value:v, level:permLevel(v, "app"), granted:true, consent:"admin"}); });
+      (grBy.get(sp.id) || []).forEach(gr => { const r = resById.get(gr.resourceId); const res = r?.name || gr.resourceId;
+        (gr.scope || "").split(" ").filter(Boolean).forEach(v => {
+          let p = findP("del", res, v);
+          if(!p){ p = {kind:"del", res, value:v, level:permLevel(v, "del"), granted:true, consent:"", users:0}; perms.push(p); }
+          if(gr.consentType === "AllPrincipals") p.consent = "admin"; else { p.users++; if(p.consent !== "admin") p.consent = "user"; }
+        }); });
+    }
+    (a.requiredResourceAccess || []).forEach(rr => {
+      const r = resByApp.get((rr.resourceAppId || "").toLowerCase());
+      (rr.resourceAccess || []).forEach(ra => {
+        const kind = ra.type === "Role" ? "app" : "del";
+        const v = (kind === "app" ? r?.roles[ra.id] : r?.scopes[ra.id]) || ra.id;
+        const res = r?.name || rr.resourceAppId;
+        if(!findP(kind, res, v)) perms.push({kind, res, value:v, level:permLevel(v, kind), granted:false});
+      });
+    });
+    perms.sort((p, q) => q.level - p.level || (p.kind === "app" ? -1 : 1) || p.value.localeCompare(q.value));
+    const permKnown = R.permOk && (R.grantOk || true);
+    const counted = perms.filter(p => p.granted || !R.permOk);
+    const tier = counted.reduce((m, p) => Math.max(m, p.level), 0);
+    const appPerms = counted.filter(p => p.kind === "app");
+    const delPerms = counted.filter(p => p.kind === "del");
+    const appOnly = appPerms.length > 0, delegated = delPerms.length > 0;
+    const kind = appOnly && delegated ? "both" : appOnly ? "app" : delegated ? "del" : "";
+    const asgReq = sp ? sp.appRoleAssignmentRequired === true : null;
+    const userFacing = !!sp && (perms.some(p => p.kind === "del") || !!acts.delClient || !appOnly);
+    const unrestricted = !!sp && asgReq === false && userFacing;
+
+    /* sign-in */
+    const sign = !R.signOk ? "unknown" : !last ? "never" : daysSince(last) > inact ? "stale" : "active";
     const unused = sign === "never" || sign === "stale";
     const credState = validSecrets ? "active" : validCerts ? "cert" : expired ? "expired" : "none";
 
@@ -731,24 +1023,69 @@ function evaluate(){
     if(unused && valid.length) flags.push("risk");
     if(ownerState === "none") flags.push("noOwner");
     if(ownerState === "disabled") flags.push("disOwner");
+    if(unrestricted) flags.push("unres");
     if(expired) flags.push("expired");
     if(sign === "active" && R.credOk && valid.some(c => !c.lastUsed && daysSince(c.start) > inact)) flags.push("unusedCred");
     if(valid.some(c => c.status === "soon")) flags.push("soon");
     if(valid.some(c => c.long)) flags.push("long");
+    if(/Multiple|Personal/.test(a.signInAudience || "")) flags.push("multi");
 
     let verdict;
     if(sign === "unknown") verdict = "unknown";
     else if(unused && !recent) verdict = "delete";
-    else if(flags.some(f => ["noOwner", "disOwner", "expired", "unusedCred", "soon", "long", "risk"].includes(f))) verdict = "review";
+    else if(flags.some(f => ["noOwner", "disOwner", "expired", "unusedCred", "soon", "long", "risk"].includes(f)) || (unrestricted && tier >= 2)) verdict = "review";
     else verdict = "ok";
 
-    // priority: lower is more urgent
-    const prio = (verdict === "delete" ? (flags.includes("risk") ? 0 : 1) : verdict === "review" ? (flags.includes("risk") ? 2 : 3) : verdict === "unknown" ? 4 : 5) * 1e6 - (daysSince(last) ?? age);
     const signShown = unused && recent && sign === "never" ? "recent" : sign;
-
-    return {id:a.id, appId:a.appId, name:a.displayName || "(no name)", created:a.createdDateTime, age, audience:a.signInAudience || "", publisher:a.publisherDomain || "",
-      acts, last, sign, signShown, recent, owners, ownerState, creds, validSecrets, validCerts, expired, credState, flags, verdict, prio};
+    const ipInfo = R.ips?.[a.appId] || null;
+    const app = {id:a.id, appId:a.appId, name:a.displayName || "(no name)", created:a.createdDateTime, age, audience:a.signInAudience || "", publisher:a.publisherDomain || "",
+      acts, last, sign, signShown, recent, owners, ownerState, creds, validSecrets, validCerts, expired, credState, flags, verdict,
+      spId:sp?.id || "", perms, tier, appPerms, delPerms, appOnly, delegated, kind, asgReq, unrestricted, ipInfo};
+    app.recs = recommend(app, inact);
+    app.risk = app.recs.reduce((m, r) => Math.max(m, r.sev), 0);
+    app.prio = -(app.risk * 100 + app.tier * 10 + (verdict === "delete" ? 5 : 0)) * 1e5 - Math.min(daysSince(last) ?? age, 99999) / 1e5;
+    return app;
   });
+}
+function recommend(a, inact){
+  const R = [], add = (id, sev, ...p) => R.push({id, sev, txt:t("r_" + id, ...p)});
+  const hi = a.tier >= 3;
+  if(a.sign === "unknown") add("unknown", 2);
+  if(a.flags.includes("risk")) add("rmSecrets", 4);
+  if(a.verdict === "delete") add("delete", hi ? 4 : 3, inact);
+  if(a.signShown === "recent") add("recent", 1, inact);
+  const live = a.verdict !== "delete";
+  if(live){
+    const strong = a.appPerms.filter(p => p.level >= 3);
+    if(strong.length){
+      const lst = strong.slice(0, 6).map(p => p.value + (altOf(p.value) ? " → " + t(altOf(p.value)) : "")).join(" ; ");
+      add("reducePerms", strong.some(p => p.level === 4) ? 4 : 3, lst);
+    }
+    if(a.appOnly){
+      if(a.ipInfo && !a.ipInfo.err && a.ipInfo.ips.length) add("caWidIps", hi ? 3 : 2, a.ipInfo.ips.length);
+      else add("caWid", hi ? 3 : 2);
+      if(a.validSecrets) add("certInstead", hi ? 3 : 2);
+    }
+    if(a.unrestricted) add("assignReq", hi ? 3 : 2);
+    const adminDel = a.delPerms.filter(p => p.granted && p.consent === "admin" && p.level >= 3);
+    if(adminDel.length) add("adminConsent", 3, adminDel.map(p => p.value).join(", "));
+    if(a.delegated && a.sign === "active") add("caUser", hi ? 2 : 1);
+    if(a.ownerState === "none") add("noOwner", 3);
+    if(a.ownerState === "disabled") add("disOwner", 2);
+    if(a.flags.includes("multi")) add("multiTenant", hi ? 3 : 2);
+    if(a.flags.includes("unusedCred")) add("unusedCred", 2);
+    if(a.flags.includes("soon")) add("soon", 2);
+    if(a.flags.includes("long")) add("long", 2);
+    if(S.raw.permOk && S.raw.grantOk){
+      const req = a.perms.filter(p => !p.granted && p.level >= 2);
+      if(req.length) add("unusedReq", 1, req.slice(0, 6).map(p => p.value).join(", "));
+    }
+  }
+  if(a.flags.includes("expired")) add("expired", 1);
+  // caWidIps keeps the caWid key for grouping
+  R.forEach(r => { if(r.id === "caWidIps") r.key = "caWid"; else r.key = r.id; });
+  R.sort((x, y) => y.sev - x.sev);
+  return R;
 }
 
 /* ---------------- render helpers ---------------- */
@@ -756,6 +1093,8 @@ const VCLS = {delete:"st-fail", review:"st-inv", ok:"st-pass", unknown:"st-na"};
 const SCLS = {active:"st-pass", stale:"st-part", never:"st-fail", unknown:"st-na", recent:"st-inv"};
 const pill = (cls, txt) => `<span class="pill ${cls}">${esc(txt)}</span>`;
 const vPill = a => pill(VCLS[a.verdict], t("v_" + a.verdict));
+const lvPill = l => pill("lv-" + LVN[l], t("l_" + LVN[l]));
+const sevPill = s => s ? pill("lv-" + LVN[s], t("sev_" + SEVN[s])) : pill("st-pass", t("sev_ok"));
 const signCell = a => `${pill(SCLS[a.signShown], t("s_" + a.signShown))}${a.last ? `<div class="muted small">${esc(agoTxt(a.last))}</div>` : ""}`;
 function ownersCell(a){
   if(a.ownerState === "none") return `<span class="tag bad">${esc(t("o_none"))}</span>`;
@@ -763,19 +1102,25 @@ function ownersCell(a){
   return first + (a.owners.length > 2 ? `<div class="muted small">+${a.owners.length - 2}</div>` : "");
 }
 function credCell(a){
-  const parts = [];
-  if(a.validSecrets) parts.push(`<span class="tag ${a.sign === "never" || a.sign === "stale" ? "bad" : "ok"}">${esc(t("fSecrets", a.validSecrets))}</span>`);
-  if(a.validCerts) parts.push(`<span class="tag ${a.sign === "never" || a.sign === "stale" ? "bad" : "ok"}">${esc(t("fCerts", a.validCerts))}</span>`);
+  const bad = a.sign === "never" || a.sign === "stale", parts = [];
+  if(a.validSecrets) parts.push(`<span class="tag ${bad ? "bad" : "ok"}">${esc(t("fSecrets", a.validSecrets))}</span>`);
+  if(a.validCerts) parts.push(`<span class="tag ${bad ? "bad" : "ok"}">${esc(t("fCerts", a.validCerts))}</span>`);
   if(a.expired) parts.push(`<span class="tag">${esc(t("fExpired", a.expired))}</span>`);
   return parts.join(" ") || `<span class="muted">${esc(t("none"))}</span>`;
 }
-const FLAGTAG = {risk:"bad", noOwner:"bad", disOwner:"warn", expired:"", unusedCred:"warn", soon:"warn", long:"warn"};
-const FLAGTXT = {risk:"tRisk", noOwner:"tNoOwner", disOwner:"tDisOwner", expired:"tExpired", unusedCred:"tUnusedCred", soon:"tSoon", long:"tLong"};
-const flagsHtml = a => a.flags.map(f => `<span class="tag ${FLAGTAG[f]}">${esc(t(FLAGTXT[f]))}</span>`).join("");
+const permTag = p => `<span class="tag lv-${LVN[p.level]}" title="${esc(p.res)}">${esc((p.kind === "app" ? "⚙ " : "👤 ") + p.value)}</span>`;
+const topPerms = (a, n = 3) => { const L = [...a.appPerms, ...a.delPerms].sort((p, q) => q.level - p.level || (p.kind === "app" ? -1 : 1)); return L.length ? `<div class="perms">${L.slice(0, n).map(permTag).join("")}${L.length > n ? `<span class="muted small">+${L.length - n}</span>` : ""}</div>` : `<span class="muted">${esc(t("none"))}</span>`; };
+const asgCell = a => a.asgReq === null ? `<span class="muted">${esc(t("asg_na"))}</span>` : a.asgReq ? pill("st-pass", t("asg_yes")) : pill(a.unrestricted ? "st-inv" : "st-na", t("asg_no"));
+const FLAGTAG = {risk:"bad", noOwner:"bad", disOwner:"warn", unres:"warn", expired:"", unusedCred:"warn", soon:"warn", long:"warn", multi:""};
+const FLAGTXT = {risk:"tRisk", noOwner:"tNoOwner", disOwner:"tDisOwner", unres:"tUnres", expired:"tExpired", unusedCred:"tUnusedCred", soon:"tSoon", long:"tLong", multi:"tMulti"};
+const kindTags = a => (a.appOnly ? `<span class="tag ${a.tier >= 3 ? "bad" : ""}">${esc(t("tAppOnly"))}</span>` : "") + (a.delegated ? `<span class="tag">${esc(t("tDel"))}</span>` : "");
+const flagsHtml = a => kindTags(a) + a.flags.map(f => `<span class="tag ${FLAGTAG[f]}">${esc(t(FLAGTXT[f]))}</span>`).join("");
+const recoCell = a => { const r = a.recs[0]; return r ? `<div class="reco">${sevPill(r.sev)}${esc(t("rs_" + r.key))}</div>` : `<div class="reco">${sevPill(0)}</div>`; };
+const ipCell = a => !a.appOnly ? `<span class="muted">—</span>` : !a.ipInfo ? `<span class="muted">?</span>` : a.ipInfo.err ? `<span class="tag warn">!</span>` : `<b>${a.ipInfo.ips.length}</b> <span class="muted small">/ ${a.ipInfo.ranges.length} ${esc(t("dRanges").toLowerCase())}</span>`;
 
-/* ---------------- views ---------------- */
+/* ---------------- navigation ---------------- */
 function go(v){
-  if(!S.raw && ["overview", "apps", "cleanup"].includes(v)) v = "connect";
+  if(!S.raw && ["overview", "apps", "sensitive", "cleanup"].includes(v)) v = "connect";
   S.view = v;
   $$(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
   $$("nav.side a").forEach(a => { if(a.dataset.v === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
@@ -784,6 +1129,7 @@ function go(v){
 }
 $$("nav.side a").forEach(a => a.onclick = e => { e.preventDefault(); go(a.dataset.v); });
 
+/* ---------------- connect ---------------- */
 function renderConnect(){
   $("#fTenant").value = S.cfg.tenant; $("#fClient").value = S.cfg.clientId;
   $("#fInactive").value = S.cfg.inactive; $("#fSoon").value = S.cfg.soon;
@@ -800,19 +1146,22 @@ function readCfg(){
   LS.set("cfg", S.cfg);
 }
 
+/* ---------------- overview ---------------- */
+const byRisk = L => [...L].sort((x, y) => x.prio - y.prio);
 function renderOverview(){
   const A = S.apps, R = S.raw; if(!R) return;
   $("#ovIntro").textContent = t("ovIntro", A.length, fmtDate(R.scannedAt), S.cfg.inactive);
   const n = f => A.filter(f).length;
   const k = [
     {l:"kTotal", v:A.length, f:"kTotalF", c:"var(--brand)", go:{}},
+    {l:"kSens", v:n(a => a.tier >= 3), f:"kSensF", c:"var(--fail)", go:"sensitive"},
     {l:"kRisk", v:n(a => a.flags.includes("risk")), f:"kRiskF", c:"var(--fail)", go:{flag:"risk"}},
     {l:"kDelete", v:n(a => a.verdict === "delete"), f:"kDeleteF", c:"var(--fail)", go:{verdict:"delete"}},
     {l:"kOwner", v:n(a => a.ownerState !== "ok"), f:"kOwnerF", c:"var(--part)", go:{owner:"noactive"}},
-    {l:"kReview", v:n(a => a.verdict === "review"), f:"kReviewF", c:"var(--inv)", go:{verdict:"review"}}
+    {l:"kUnres", v:n(a => a.unrestricted), f:"kUnresF", c:"var(--inv)", go:{flag:"unres"}}
   ];
   $("#kpis").innerHTML = k.map((x, i) => `<div class="card kpi" style="--c:${x.c}" role="button" tabindex="0" data-k="${i}"><div class="lbl">${esc(t(x.l))}</div><div class="v">${x.v}${i ? ` <small>${A.length ? Math.round(x.v / A.length * 100) : 0}%</small>` : ""}</div><div class="foot">${esc(t(x.f))}</div></div>`).join("");
-  $$("#kpis .kpi").forEach(el => { const fn = () => openApps(k[+el.dataset.k].go); el.onclick = fn; el.onkeydown = e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), fn()); });
+  $$("#kpis .kpi").forEach(el => { const x = k[+el.dataset.k]; const fn = () => typeof x.go === "string" ? go(x.go) : openApps(x.go); el.onclick = fn; el.onkeydown = e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), fn()); });
 
   const dist = (title, key, items) => {
     const tot = A.length || 1;
@@ -820,144 +1169,178 @@ function renderOverview(){
       <div class="legend">${items.map(it => `<button type="button" data-f="${key}" data-v="${it.v}"><i style="--c:${it.c}"></i>${esc(it.l)}<b>${it.n}</b></button>`).join("")}</div></div>`;
   };
   const cnt = (p, v) => A.filter(a => a[p] === v).length;
+  const LC = ["var(--stroke-2)", "var(--na)", "var(--inv)", "var(--part)", "var(--fail)"];
   $("#dists").innerHTML =
+    dist("dTier", "tier", [4, 3, 2, 1, 0].map(v => ({v, l:t("l_" + LVN[v]), n:A.filter(a => a.tier === v).length, c:LC[v]}))) +
     dist("dSign", "sign", ["active", "stale", "never", "recent", "unknown"].map(v => ({v, l:t("s_" + v), n:cnt("signShown", v), c:{active:"var(--pass)", stale:"var(--part)", never:"var(--fail)", recent:"var(--inv)", unknown:"var(--na)"}[v]})).filter(x => x.n || x.v !== "unknown")) +
     dist("dOwner", "owner", ["ok", "disabled", "none"].map(v => ({v, l:t("o_" + v), n:cnt("ownerState", v), c:{ok:"var(--pass)", disabled:"var(--inv)", none:"var(--fail)"}[v]}))) +
     dist("dCred", "cred", ["active", "cert", "expired", "none"].map(v => ({v, l:t("c_" + v), n:cnt("credState", v), c:{active:"var(--brand)", cert:"#7b4fd6", expired:"var(--na)", none:"var(--stroke-2)"}[v]})));
   $$("#dists .legend button").forEach(b => b.onclick = () => openApps({[b.dataset.f]:b.dataset.v}));
 
-  const top = A.filter(a => a.verdict === "delete" || a.flags.includes("risk")).sort((x, y) => x.prio - y.prio).slice(0, 10);
-  $("#topTbl").innerHTML = top.length ? `<thead><tr><th>${esc(t("cName"))}</th><th>${esc(t("cLast"))}</th><th class="hide-sm">${esc(t("cOwners"))}</th><th>${esc(t("cCreds"))}</th><th>${esc(t("cVerdict"))}</th></tr></thead><tbody>${top.map(a => `<tr data-id="${a.id}"><td><div class="t">${esc(a.name)}</div><div class="id">${esc(a.appId)}</div></td><td>${signCell(a)}</td><td class="hide-sm">${ownersCell(a)}</td><td>${credCell(a)}</td><td>${vPill(a)}</td></tr>`).join("")}</tbody>` : `<tbody><tr><td class="empty-st">${esc(t("clEmpty"))}</td></tr></tbody>`;
+  const top = byRisk(A.filter(a => a.risk >= 3)).slice(0, 10);
+  $("#topTbl").innerHTML = top.length ? `<thead><tr><th>${esc(t("cSev"))}</th><th>${esc(t("cName"))}</th><th>${esc(t("cTier"))}</th><th class="hide-sm">${esc(t("cLast"))}</th><th class="hide-sm">${esc(t("cCreds"))}</th><th>${esc(t("cReco"))}</th></tr></thead><tbody>${top.map(a => `<tr data-id="${a.id}"><td>${sevPill(a.risk)}</td><td><div class="t">${esc(a.name)}</div><div class="meta">${kindTags(a)}</div></td><td>${lvPill(a.tier)}</td><td class="hide-sm">${signCell(a)}</td><td class="hide-sm">${credCell(a)}</td><td>${esc(t("rs_" + a.recs[0].key))}</td></tr>`).join("")}</tbody>` : `<tbody><tr><td class="empty-st">${esc(t("clEmpty"))}</td></tr></tbody>`;
   $$("#topTbl tbody tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
 }
 
+/* ---------------- apps ---------------- */
 function openApps(f){
-  S.f = {q:"", verdict:"", sign:"", owner:"", cred:"", flag:""};
+  S.f = {q:"", verdict:"", tier:"", sign:"", owner:"", cred:"", flag:""};
   Object.assign(S.f, f); S.shown = 100; syncFilterUI(); renderApps(); go("apps");
 }
-function fillSel(id, all, prefix, vals, cur){
-  $(id).innerHTML = `<option value="">${esc(t(all))}</option>` + vals.map(v => `<option value="${v}">${esc(typeof v === "string" && T.en[prefix + v] ? t(prefix + v) : v)}</option>`).join("");
-  $(id).value = cur || "";
+function opts(id, all, list, cur){
+  $(id).innerHTML = `<option value="">${esc(t(all))}</option>` + list.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("");
+  $(id).value = cur ?? "";
 }
 function syncFilterUI(){
   $("#q").value = S.f.q || "";
-  fillSel("#fVerdict", "allVerdict", "v_", ["delete", "review", "ok", "unknown"], S.f.verdict);
-  fillSel("#fSign", "allSign", "s_", ["active", "stale", "never", "recent", "unknown"], S.f.sign);
-  $("#fOwner").innerHTML = `<option value="">${esc(t("allOwner"))}</option>` + ["ok", "noactive", "none", "disabled"].map(v => `<option value="${v}">${esc(v === "noactive" ? t("kOwner") : t("o_" + v))}</option>`).join("");
-  $("#fOwner").value = S.f.owner || "";
-  $("#fCred").innerHTML = `<option value="">${esc(t("allCred"))}</option>` + ["active", "cert", "expired", "none", "soon", "risk"].map(v => `<option value="${v}">${esc(v === "soon" ? t("c_soon") : v === "risk" ? t("tRisk") : t("c_" + v))}</option>`).join("");
-  $("#fCred").value = S.f.flag === "risk" ? "risk" : (S.f.cred || "");
+  opts("#fVerdict", "allVerdict", ["delete", "review", "ok", "unknown"].map(v => [v, t("v_" + v)]), S.f.verdict);
+  opts("#fTier", "allTier", [4, 3, 2, 1, 0].map(v => [String(v), t("l_" + LVN[v])]), S.f.tier === "" ? "" : String(S.f.tier));
+  opts("#fSign", "allSign", ["active", "stale", "never", "recent", "unknown"].map(v => [v, t("s_" + v)]), S.f.sign);
+  opts("#fOwner", "allOwner", [["ok", t("o_ok")], ["noactive", t("kOwner")], ["none", t("o_none")], ["disabled", t("o_disabled")]], S.f.owner);
+  opts("#fCred", "allCred", [["active", t("c_active")], ["cert", t("c_cert")], ["expired", t("c_expired")], ["none", t("c_none")], ["soon", t("c_soon")], ["risk", t("tRisk")], ["unres", t("tUnres")]],
+    S.f.flag === "risk" || S.f.flag === "unres" ? S.f.flag : (S.f.cred || ""));
 }
 function filtered(){
   const q = (S.f.q || "").toLowerCase();
-  let L = S.apps.filter(a =>
-    (!q || a.name.toLowerCase().includes(q) || (a.appId || "").toLowerCase().includes(q) || a.owners.some(o => (o.name + " " + o.upn).toLowerCase().includes(q))) &&
+  const L = S.apps.filter(a =>
+    (!q || a.name.toLowerCase().includes(q) || (a.appId || "").toLowerCase().includes(q) || a.owners.some(o => (o.name + " " + o.upn).toLowerCase().includes(q)) || a.perms.some(p => p.value.toLowerCase().includes(q))) &&
     (!S.f.verdict || a.verdict === S.f.verdict) &&
+    (S.f.tier === "" || S.f.tier === undefined || a.tier === +S.f.tier) &&
     (!S.f.sign || a.signShown === S.f.sign) &&
     (!S.f.owner || (S.f.owner === "noactive" ? a.ownerState !== "ok" : a.ownerState === S.f.owner)) &&
     (!S.f.cred || (S.f.cred === "soon" ? a.flags.includes("soon") : a.credState === S.f.cred)) &&
     (!S.f.flag || a.flags.includes(S.f.flag)));
   const {k, d} = S.sort;
-  const val = a => k === "name" ? a.name.toLowerCase() : k === "created" ? (a.created || "") : k === "last" ? (a.last || "") : k === "owners" ? a.owners.length : k === "creds" ? a.validSecrets * 10 + a.validCerts : a.prio;
-  return L.sort((x, y) => { const p = val(x), q2 = val(y); return (p < q2 ? -1 : p > q2 ? 1 : 0) * d || x.name.localeCompare(y.name); });
+  const val = a => k === "name" ? a.name.toLowerCase() : k === "created" ? (a.created || "") : k === "last" ? (a.last || "") : k === "owners" ? a.owners.length : k === "creds" ? a.validSecrets * 10 + a.validCerts : k === "tier" ? -a.tier : k === "verdict" ? ["delete", "review", "unknown", "ok"].indexOf(a.verdict) : a.prio;
+  return L.sort((x, y) => { const p = val(x), q2 = val(y); return (p < q2 ? -1 : p > q2 ? 1 : 0) * d || x.prio - y.prio; });
 }
 function renderApps(){
   if(!S.raw) return;
   const L = filtered();
-  const cols = [["prio", "cVerdict"], ["name", "cName"], ["last", "cLast"], ["owners", "cOwners"], ["creds", "cCreds"], ["created", "cCreated"]];
-  const head = `<thead><tr>${cols.map(([k, l]) => `<th class="${k === "created" ? "hide-sm" : ""}"><button type="button" data-k="${k}">${esc(t(l))}${S.sort.k === k ? `<span class="ar">${S.sort.d > 0 ? "▲" : "▼"}</span>` : ""}</button></th>`).join("")}</tr></thead>`;
-  const rows = L.slice(0, S.shown).map(a => `<tr data-id="${a.id}"><td>${vPill(a)}</td><td><div class="t">${esc(a.name)}</div><div class="id">${esc(a.appId)}</div><div class="meta">${flagsHtml(a)}</div></td><td>${signCell(a)}</td><td>${ownersCell(a)}</td><td>${credCell(a)}</td><td class="hide-sm muted">${esc(fmtDate(a.created))}</td></tr>`).join("");
-  $("#appTbl").innerHTML = head + `<tbody>${rows || `<tr><td colspan="6" class="empty-st">${esc(t("clEmpty"))}</td></tr>`}</tbody>`;
+  const cols = [["risk", "cSev"], ["verdict", "cVerdict"], ["name", "cName"], ["tier", "cTier"], ["last", "cLast"], ["owners", "cOwners"], ["creds", "cCreds"], ["created", "cCreated"]];
+  const head = `<thead><tr>${cols.map(([k, l]) => `<th class="${k === "created" || k === "verdict" ? "hide-sm" : ""}"><button type="button" data-k="${k}">${esc(t(l))}${S.sort.k === k ? `<span class="ar">${S.sort.d > 0 ? "▲" : "▼"}</span>` : ""}</button></th>`).join("")}</tr></thead>`;
+  const rows = L.slice(0, S.shown).map(a => `<tr data-id="${a.id}"><td>${sevPill(a.risk)}</td><td class="hide-sm">${vPill(a)}</td><td><div class="t">${esc(a.name)}</div><div class="id">${esc(a.appId)}</div><div class="meta">${flagsHtml(a)}</div></td><td>${lvPill(a.tier)}${topPerms(a, 2)}</td><td>${signCell(a)}</td><td>${ownersCell(a)}</td><td>${credCell(a)}</td><td class="hide-sm muted">${esc(fmtDate(a.created))}</td></tr>`).join("");
+  $("#appTbl").innerHTML = head + `<tbody>${rows || `<tr><td colspan="8" class="empty-st">${esc(t("clEmpty"))}</td></tr>`}</tbody>`;
   $("#count").textContent = t("showing", Math.min(S.shown, L.length), L.length);
   const rest = L.length - S.shown;
   $("#moreWrap").hidden = rest <= 0; $("#moreBtn").textContent = t("showMore", Math.min(rest, 200));
-  $$("#appTbl th button").forEach(b => b.onclick = () => { const k = b.dataset.k; S.sort = {k, d:S.sort.k === k ? -S.sort.d : (k === "last" || k === "created" ? 1 : 1)}; renderApps(); });
+  $$("#appTbl th button").forEach(b => b.onclick = () => { const k = b.dataset.k; S.sort = {k, d:S.sort.k === k ? -S.sort.d : 1}; renderApps(); });
   $$("#appTbl tbody tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
 }
 $("#moreBtn").onclick = () => { S.shown += 200; renderApps(); };
 $("#q").oninput = e => { S.f.q = e.target.value; S.shown = 100; renderApps(); };
 $("#fVerdict").onchange = e => { S.f.verdict = e.target.value; renderApps(); };
+$("#fTier").onchange = e => { S.f.tier = e.target.value; renderApps(); };
 $("#fSign").onchange = e => { S.f.sign = e.target.value; renderApps(); };
 $("#fOwner").onchange = e => { S.f.owner = e.target.value; renderApps(); };
-$("#fCred").onchange = e => { const v = e.target.value; S.f.flag = v === "risk" ? "risk" : ""; S.f.cred = v === "risk" ? "" : v; renderApps(); };
+$("#fCred").onchange = e => { const v = e.target.value; const fl = v === "risk" || v === "unres"; S.f.flag = fl ? v : ""; S.f.cred = fl ? "" : v; renderApps(); };
 $("#resetF").onclick = () => openApps({});
 
-/* ---------------- flyout ---------------- */
-function openFly(id){
-  const a = S.apps.find(x => x.id === id); if(!a) return;
-  $("#flyTitle").textContent = a.name; $("#flySub").textContent = a.appId;
-  const inact = S.cfg.inactive;
-  const todo = [];
-  if(a.verdict === "unknown") todo.push(["warn", t("todoUnknown")]);
-  if(a.flags.includes("risk")) todo.push(["bad", t("todoRisk")]);
-  if(a.verdict === "delete") todo.push(["bad", t("todoDelete", inact)]);
-  if(a.signShown === "recent") todo.push(["warn", t("todoRecent", inact)]);
-  if(a.verdict !== "delete"){
-    if(a.ownerState === "none") todo.push(["bad", t("todoNoOwner")]);
-    if(a.ownerState === "disabled") todo.push(["warn", t("todoDisOwner")]);
-    if(a.flags.includes("unusedCred")) todo.push(["warn", t("todoUnused")]);
-    if(a.flags.includes("soon")) todo.push(["warn", t("todoSoon")]);
-    if(a.flags.includes("long")) todo.push(["warn", t("todoLong")]);
-  }
-  if(a.flags.includes("expired")) todo.push(["warn", t("todoExpired")]);
-  if(!todo.length) todo.push(["ok", t("todoOk")]);
+/* ---------------- sensitive ---------------- */
+function snList(){
+  const min = +S.sn.tier || 0;
+  return [...S.apps].filter(a => a.tier >= Math.max(min, 1) && (!S.sn.kind || (S.sn.kind === "app" ? a.appOnly : a.delegated)))
+    .sort((x, y) => y.tier - x.tier || x.prio - y.prio);
+}
+function renderSensitive(){
+  if(!S.raw) return;
+  opts("#snTier", "allTier", [["4", t("tierMin_crit")], ["3", t("tierMin_high")], ["2", t("tierMin_med")]], S.sn.tier);
+  opts("#snKind", "allKind", [["app", t("k_app")], ["del", t("k_del")]], S.sn.kind);
+  const L = snList();
+  $("#snCount").textContent = String(L.length);
+  $("#snTbl").innerHTML = L.length ? `<thead><tr><th>${esc(t("cTier"))}</th><th>${esc(t("cName"))}</th><th>${esc(t("cPerms"))}</th><th>${esc(t("cAssign"))}</th><th class="hide-sm">${esc(t("cLast"))}</th><th class="hide-sm">${esc(t("cIps"))}</th><th>${esc(t("cReco"))}</th></tr></thead><tbody>${L.map(a => `<tr data-id="${a.id}"><td>${lvPill(a.tier)}</td><td><div class="t">${esc(a.name)}</div><div class="meta">${kindTags(a)}${a.flags.includes("risk") ? `<span class="tag bad">${esc(t("tRisk"))}</span>` : ""}${a.ownerState !== "ok" ? `<span class="tag bad">${esc(t("o_" + a.ownerState))}</span>` : ""}</div></td><td>${topPerms(a, 3)}</td><td>${asgCell(a)}</td><td class="hide-sm">${signCell(a)}</td><td class="hide-sm">${ipCell(a)}</td><td>${recoCell(a)}</td></tr>`).join("")}</tbody>` : `<tbody><tr><td class="empty-st">${esc(t("clEmpty"))}</td></tr></tbody>`;
+  $$("#snTbl tbody tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
+  const nS = S.apps.filter(a => a.tier >= 4).length; const b = $("#sensBadge"); b.hidden = !nS; b.textContent = nS;
+}
+$("#snTier").onchange = e => { S.sn.tier = e.target.value; renderSensitive(); };
+$("#snKind").onchange = e => { S.sn.kind = e.target.value; renderSensitive(); };
+$("#snCsv").onclick = () => download(`entra-sensitive-apps-${stamp()}.csv`, csvOf(snList()), "text/csv");
+const ipCandidates = () => S.apps.filter(a => a.appOnly && a.spId && a.verdict !== "delete").sort((x, y) => y.tier - x.tier || x.prio - y.prio).slice(0, 60);
+$("#ipAllBtn").onclick = async () => {
+  const L = ipCandidates(); const btn = $("#ipAllBtn"); btn.disabled = true;
+  try{
+    for(let i = 0; i < L.length; i++){ $("#ipStatus").innerHTML = `<span class="spin"></span>${esc(t("ipProgress", i, L.length))}`; await analyzeIps(L[i]); }
+    $("#ipStatus").textContent = t("ipDone", L.length);
+  }catch(e){ $("#ipStatus").textContent = e.message; }
+  finally{ btn.disabled = false; evaluate(); renderAll(); }
+};
+$("#caAllBtn").onclick = () => {
+  const L = S.apps.filter(a => a.appOnly && a.ipInfo && !a.ipInfo.err && a.ipInfo.ranges.length).sort((x, y) => y.tier - x.tier);
+  if(!L.length){ toast(t("caNone")); return; }
+  showModal(t("caTitle"), t("caSub"), caScript(L), `entra-wid-conditional-access-${stamp()}.ps1`);
+};
 
+/* ---------------- flyout ---------------- */
+let flyId = null;
+function openFly(id){
+  const a = S.apps.find(x => x.id === id); if(!a) return; flyId = id;
+  $("#flyTitle").textContent = a.name; $("#flySub").textContent = a.appId;
   const acts = [["sAny", a.acts.any], ["sDelClient", a.acts.delClient], ["sDelRes", a.acts.delRes], ["sAppClient", a.acts.appClient], ["sAppRes", a.acts.appRes]];
-  const credRows = a.creds.sort((x, y) => (y.end || "").localeCompare(x.end || "")).map(c => `<tr><td>${esc(t(c.type))}</td><td>${esc(c.name || "—")}</td><td>${esc(fmtDate(c.end))}</td><td>${c.lastUsed === undefined ? "—" : esc(c.lastUsed ? agoTxt(c.lastUsed) : t("never"))}</td><td>${pill(c.status === "expired" ? "st-na" : c.status === "soon" ? "st-inv" : (a.sign === "never" || a.sign === "stale") ? "st-fail" : "st-pass", t("cr_" + c.status))}</td></tr>`).join("");
+  const credRows = [...a.creds].sort((x, y) => (y.end || "").localeCompare(x.end || "")).map(c => `<tr><td>${esc(t(c.type))}</td><td>${esc(c.name || "—")}</td><td>${esc(fmtDate(c.end))}</td><td>${c.lastUsed === undefined ? "—" : esc(c.lastUsed ? agoTxt(c.lastUsed) : t("never"))}</td><td>${pill(c.status === "expired" ? "st-na" : c.status === "soon" ? "st-inv" : (a.sign === "never" || a.sign === "stale") ? "st-fail" : "st-pass", t("cr_" + c.status))}</td></tr>`).join("");
+  const permRows = a.perms.map(p => `<tr class="${p.granted || !S.raw.permOk ? "" : "muted"}"><td>${esc(p.kind === "app" ? t("pApp") : t("pDel"))}</td><td>${esc(p.res)}</td><td><b>${esc(p.value)}</b>${p.kind === "app" && altOf(p.value) && p.level >= 3 ? `<div class="muted small">→ ${esc(t(altOf(p.value)))}</div>` : ""}</td><td>${lvPill(p.level)}</td><td class="small">${!p.granted && S.raw.permOk ? esc(t("pRequested")) : p.consent === "admin" ? esc(t("pAdmin")) : p.consent === "user" ? esc(t("pUsers", p.users)) : ""}</td></tr>`).join("");
   const portal = `https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/${encodeURIComponent(a.appId)}`;
+  const ip = a.ipInfo;
+  const widHtml = !a.appOnly || !a.spId ? "" : `<div><h3>${esc(t("flyWid"))}</h3><div class="wid">
+      ${!ip ? `<div class="actions-row"><button class="btn primary" type="button" id="ipOne">${esc(t("ipBtn"))}</button><span class="statusline" id="ipOneSt"></span></div>`
+      : ip.err ? `<div>${esc(t("ipErr", ip.err))}</div><div><button class="btn" type="button" id="ipOne">${esc(t("ipBtn"))}</button></div>`
+      : !ip.ips.length ? `<div>${esc(t("ipNone"))}</div>`
+      : `<div>${esc(t("ipHead", ip.events, ip.ips.length, ip.truncated ? t("ipTrunc") : ""))}</div>
+        <div class="scroll"><table class="mini"><thead><tr><th>${esc(t("ipIp"))}</th><th>${esc(t("ipCount"))}</th><th>${esc(t("ipLast"))}</th><th>${esc(t("ipWhere"))}</th></tr></thead><tbody>${ip.ips.slice(0, 25).map(x => `<tr><td style="font-family:var(--mono)">${esc(x.ip)}</td><td>${x.count}</td><td>${esc(agoTxt(x.last))}</td><td class="muted">${esc(x.where)}</td></tr>`).join("")}</tbody></table></div>
+        <div><b>${esc(t("ipRanges"))}</b> : <span style="font-family:var(--mono)">${esc(ip.ranges.map(r => r.cidr).join(", "))}</span></div>
+        <div class="actions-row"><button class="btn primary" type="button" id="caOne">${esc(t("caBtn"))}</button><button class="btn" type="button" id="ipOne">${esc(t("reload"))}</button></div>`}
+    </div></div>`;
 
   $("#flyBody").innerHTML = `
-    <div><h3>${esc(t("flyTodo"))}</h3><ul class="todo">${todo.map(([c, s]) => `<li class="${c}"><i>${c === "ok" ? "✓" : "!"}</i><span>${esc(s)}</span></li>`).join("")}</ul></div>
+    <div><h3>${esc(t("flyReco"))}</h3><ul class="todo">${(a.recs.length ? a.recs : [{sev:0, txt:t("r_ok")}]).map(r => `<li>${sevPill(r.sev)}<span>${esc(r.txt)}</span></li>`).join("")}</ul></div>
     <div><h3>${esc(t("flyFacts"))}</h3><div class="facts">
       <div><b>${esc(t("fVerdict"))}</b>${vPill(a)}</div>
+      <div><b>${esc(t("fTierL"))}</b>${lvPill(a.tier)}</div>
+      <div><b>${esc(t("fAsgL"))}</b>${asgCell(a)}</div>
       <div><b>${esc(t("fLastL"))}</b>${esc(a.sign === "unknown" ? "—" : agoTxt(a.last))}</div>
       <div><b>${esc(t("fCreatedL"))}</b>${esc(fmtDate(a.created))}</div>
       <div><b>${esc(t("fAudience"))}</b>${esc(a.audience)}</div>
-      <div><b>${esc(t("fPublisher"))}</b>${esc(a.publisher || "—")}</div>
-      <div><b>Object ID</b><span class="small" style="font-family:var(--mono)">${esc(a.id)}</span></div>
     </div><div class="meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${flagsHtml(a)}</div></div>
-    <div><h3>${esc(t("flySign"))}</h3>${S.raw.signOk ? `<table class="mini"><tbody>${acts.map(([l, d]) => `<tr><td>${esc(t(l))}</td><td>${esc(d ? fmtDate(d) : "—")}</td><td class="muted">${d ? esc(agoTxt(d)) : ""}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">${esc(t("todoUnknown"))}</p>`}</div>
+    <div><h3>${esc(t("flyPerms"))} (${a.perms.length})</h3>${a.perms.length ? `<div class="scroll"><table class="mini"><thead><tr><th>${esc(t("pType"))}</th><th>${esc(t("pRes"))}</th><th>${esc(t("pPerm"))}</th><th>${esc(t("pLevel"))}</th><th>${esc(t("pConsent"))}</th></tr></thead><tbody>${permRows}</tbody></table></div>` : `<span class="muted">${esc(t("pNone"))}</span>`}</div>
+    ${widHtml}
+    <div><h3>${esc(t("flySign"))}</h3>${S.raw.signOk ? `<table class="mini"><tbody>${acts.map(([l, d]) => `<tr><td>${esc(t(l))}</td><td>${esc(d ? fmtDate(d) : "—")}</td><td class="muted">${d ? esc(agoTxt(d)) : ""}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">${esc(t("r_unknown"))}</p>`}</div>
     <div><h3>${esc(t("flyOwners"))} (${a.owners.length})</h3>${a.owners.length ? `<table class="mini"><tbody>${a.owners.map(o => `<tr><td>${esc(o.name)}${o.isSp ? ` <span class="tag">${esc(t("sp"))}</span>` : ""}${o.disabled ? ` <span class="tag warn">${esc(t("disabled"))}</span>` : ""}</td><td class="muted">${esc(o.upn)}</td></tr>`).join("")}</tbody></table>` : `<span class="tag bad">${esc(t("o_none"))}</span>`}</div>
     <div><h3>${esc(t("flyCreds"))} (${a.creds.length})</h3>${a.creds.length ? `<div class="scroll"><table class="mini"><thead><tr><th>${esc(t("crType"))}</th><th>${esc(t("crName"))}</th><th>${esc(t("crEnd"))}</th><th>${esc(t("crUsed"))}</th><th>${esc(t("crStatus"))}</th></tr></thead><tbody>${credRows}</tbody></table></div>` : `<span class="muted">${esc(t("none"))}</span>`}</div>
+    <div class="facts" style="grid-template-columns:1fr 1fr"><div><b>Object ID</b><span class="small" style="font-family:var(--mono)">${esc(a.id)}</span></div><div><b>${esc(t("fSpL"))}</b><span class="small" style="font-family:var(--mono)">${esc(a.spId || "—")}</span></div></div>
     <div class="actions-row">${S.raw.demo ? "" : `<a class="btn primary" href="${portal}" target="_blank" rel="noopener">${esc(t("flyOpen"))} ↗</a>`}<button class="btn" type="button" id="flyCopy">${esc(t("copy"))} App ID</button></div>`;
   $("#flyCopy").onclick = () => copy(a.appId);
-  $("#scrim").classList.add("on"); $("#fly").classList.add("on"); $("#flyClose").focus();
+  const ipBtn = $("#ipOne");
+  if(ipBtn) ipBtn.onclick = async () => {
+    ipBtn.disabled = true; const st = $("#ipOneSt"); if(st) st.innerHTML = `<span class="spin"></span>${esc(t("ipRun"))}`;
+    try{ await analyzeIps(a); }catch{} evaluate(); renderAll(); openFly(id);
+  };
+  const caBtn = $("#caOne");
+  if(caBtn) caBtn.onclick = () => showModal(t("caTitle"), t("caSub"), caScript([a]), `entra-wid-ca-${a.name.replace(/[^a-z0-9]+/gi, "-")}.ps1`);
+  if(!$("#fly").classList.contains("on")){ $("#scrim").classList.add("on"); $("#fly").classList.add("on"); $("#flyClose").focus(); }
 }
-function closeFly(){ $("#scrim").classList.remove("on"); $("#fly").classList.remove("on"); }
+function closeFly(){ $("#scrim").classList.remove("on"); $("#fly").classList.remove("on"); flyId = null; }
 $("#flyClose").onclick = closeFly; $("#scrim").onclick = closeFly;
-document.addEventListener("keydown", e => { if(e.key === "Escape"){ closeFly(); closeModal(); } });
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ closeModal(); closeFly(); } });
 
 /* ---------------- cleanup ---------------- */
 function renderCleanup(){
   if(!S.raw) return;
-  const A = [...S.apps].sort((x, y) => x.prio - y.prio);
+  const A = byRisk(S.apps);
   const groups = [
     ["clA", "clASub", A.filter(a => a.flags.includes("risk")), {flag:"risk"}],
     ["clB", "clBSub", A.filter(a => a.verdict === "delete"), {verdict:"delete"}],
-    ["clC", "clCSub", A.filter(a => a.verdict !== "delete" && a.ownerState !== "ok"), {owner:"noactive", verdict:""}],
-    ["clD", "clDSub", A.filter(a => a.expired > 0), {flag:"expired"}]
+    ["clC", "clCSub", A.filter(a => a.verdict !== "delete" && a.ownerState !== "ok"), {owner:"noactive"}],
+    ["clD", "clDSub", A.filter(a => a.verdict !== "delete" && a.unrestricted), {flag:"unres"}]
   ];
   $("#clCards").innerHTML = groups.map(([h, s, L], i) => `<div class="card"><h2>${esc(t(h))} · ${L.length}</h2><p class="sub">${esc(t(s))}</p>
-    ${L.length ? `<table class="mini"><tbody>${L.slice(0, 8).map(a => `<tr data-id="${a.id}" style="cursor:pointer"><td><div>${esc(a.name)}</div><div class="muted small">${esc(a.sign === "unknown" ? "" : agoTxt(a.last))}</div></td><td style="text-align:right">${credCell(a)}</td></tr>`).join("")}</tbody></table>
+    ${L.length ? `<table class="mini"><tbody>${L.slice(0, 8).map(a => `<tr data-id="${a.id}" style="cursor:pointer"><td><div>${esc(a.name)}</div><div class="muted small">${esc(a.sign === "unknown" ? "" : agoTxt(a.last))}</div></td><td>${lvPill(a.tier)}</td><td style="text-align:right">${credCell(a)}</td></tr>`).join("")}</tbody></table>
     ${L.length > 8 ? `<button class="btn" type="button" style="margin-top:8px" data-g="${i}">${esc(t("clMore", L.length - 8))}</button>` : ""}` : `<p class="muted">${esc(t("clEmpty"))}</p>`}</div>`).join("");
   $$("#clCards tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
   $$("#clCards button[data-g]").forEach(b => b.onclick = () => openApps(groups[+b.dataset.g][3]));
   const nDel = S.apps.filter(a => a.verdict === "delete").length;
   const badge = $("#cleanBadge"); badge.hidden = !nDel; badge.textContent = nDel;
 }
-function csvOf(L){
-  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["DisplayName", "AppId", "ObjectId", "Verdict", "Flags", "SignInState", "LastSignIn", "Created", "Owners", "OwnerState", "ValidSecrets", "ValidCertificates", "ExpiredCredentials", "NextExpiry"];
-  const rows = L.map(a => [a.name, a.appId, a.id, a.verdict, a.flags.join("|"), a.sign, a.last || "", a.created || "", a.owners.map(o => o.upn || o.name).join("; "), a.ownerState, a.validSecrets, a.validCerts, a.expired,
-    a.creds.filter(c => c.status !== "expired").map(c => c.end).sort()[0] || ""]);
-  return "﻿" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
-}
-const stamp = () => new Date().toISOString().slice(0, 10);
-$("#csvBtn").onclick = () => download(`entra-apps-${stamp()}.csv`, csvOf(filtered()), "text/csv");
-$("#csvDelBtn").onclick = () => download(`entra-apps-to-delete-${stamp()}.csv`, csvOf(S.apps.filter(a => a.verdict === "delete").sort((x, y) => x.prio - y.prio)), "text/csv");
-
 function buildScript(){
-  const L = S.apps.filter(a => a.verdict === "delete").sort((x, y) => x.prio - y.prio);
+  const L = byRisk(S.apps.filter(a => a.verdict === "delete"));
   const fr = LANG === "fr";
   const lines = [
     "# Entra App Cleanup - " + (fr ? "script de nettoyage" : "cleanup script") + " - " + new Date().toISOString(),
@@ -970,53 +1353,223 @@ function buildScript(){
     ""
   ];
   L.forEach(a => {
-    lines.push(`# ${a.name} | ${a.appId} | ${fr ? "dernière connexion" : "last sign-in"}: ${a.last ? a.last.slice(0, 10) : (fr ? "jamais" : "never")} | ${fr ? "propriétaires" : "owners"}: ${a.owners.map(o => o.upn || o.name).join(", ") || (fr ? "aucun" : "none")} | ${fr ? "secrets valides" : "valid secrets"}: ${a.validSecrets}, ${fr ? "certificats valides" : "valid certs"}: ${a.validCerts}`);
+    lines.push(`# ${a.name} | ${a.appId} | ${fr ? "dernière connexion" : "last sign-in"}: ${a.last ? a.last.slice(0, 10) : (fr ? "jamais" : "never")} | ${fr ? "sensibilité" : "sensitivity"}: ${t("l_" + LVN[a.tier])} | ${fr ? "propriétaires" : "owners"}: ${a.owners.map(o => o.upn || o.name).join(", ") || (fr ? "aucun" : "none")} | ${fr ? "secrets valides" : "valid secrets"}: ${a.validSecrets}, ${fr ? "certificats valides" : "valid certs"}: ${a.validCerts}`);
     lines.push(`# Remove-MgApplication -ApplicationId '${a.id}'`);
     lines.push("");
   });
   return lines.join("\r\n");
 }
-$("#scriptBtn").onclick = () => {
-  $("#modalTitle").textContent = t("scriptTitle"); $("#modalSub").textContent = t("scriptSub");
-  $("#modalText").value = buildScript(); $("#modal").classList.add("on");
-};
-function closeModal(){ $("#modal").classList.remove("on"); }
-$("#modalClose").onclick = closeModal;
-$("#modalCopy").onclick = () => copy($("#modalText").value);
-$("#modalDl").onclick = () => download(`entra-app-cleanup-${stamp()}.ps1`, $("#modalText").value);
+$("#scriptBtn").onclick = () => showModal(t("scriptTitle"), t("scriptSub"), buildScript(), `entra-app-cleanup-${stamp()}.ps1`);
+$("#csvDelBtn").onclick = () => download(`entra-apps-to-delete-${stamp()}.csv`, csvOf(byRisk(S.apps.filter(a => a.verdict === "delete"))), "text/csv");
+
+/* ---------------- CSV ---------------- */
+function csvOf(L){
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const pl = (a, kind) => a.perms.filter(p => p.kind === kind && (p.granted || !S.raw.permOk)).map(p => `${p.res}: ${p.value} [${LVN[p.level].toUpperCase()}]${kind === "del" && p.consent ? " (" + (p.consent === "admin" ? "admin" : p.users + " users") + ")" : ""}`).join(", ");
+  const head = ["DisplayName", "AppId", "ObjectId", "ServicePrincipalId", "Criticality", "Sensitivity", "Verdict", "Type", "ApplicationPermissions", "DelegatedPermissions", "RequestedNotGranted",
+    "AssignmentRequired", "UnrestrictedUsers", "SignInState", "LastSignIn", "LastDelegatedSignIn", "LastAppOnlySignIn", "Created", "Audience", "Owners", "OwnerState",
+    "ValidSecrets", "ValidCertificates", "ExpiredCredentials", "NextExpiry", "CredentialsDetail", "KnownIPs", "ProposedRanges", "Flags", "Recommendations"];
+  const rows = L.map(a => [a.name, a.appId, a.id, a.spId, SEVN[a.risk], LVN[a.tier], a.verdict, a.kind, pl(a, "app"), pl(a, "del"),
+    S.raw.permOk ? a.perms.filter(p => !p.granted).map(p => `${p.res}: ${p.value}`).join(", ") : "",
+    a.asgReq === null ? "" : a.asgReq, a.unrestricted, a.sign, a.last || "", maxOf(a.acts.delClient, a.acts.delRes), maxOf(a.acts.appClient, a.acts.appRes), a.created || "", a.audience,
+    a.owners.map(o => (o.upn || o.name) + (o.disabled ? " (disabled)" : "")).join("; "), a.ownerState,
+    a.validSecrets, a.validCerts, a.expired, a.creds.filter(c => c.status !== "expired").map(c => c.end).sort()[0] || "",
+    a.creds.map(c => `${c.type}:${c.name || "-"}:${(c.end || "").slice(0, 10)}:${c.status}${c.lastUsed !== undefined ? ":used " + (c.lastUsed ? c.lastUsed.slice(0, 10) : "never") : ""}`).join("; "),
+    a.ipInfo && !a.ipInfo.err ? a.ipInfo.ips.map(x => x.ip).join(" ") : "", a.ipInfo && !a.ipInfo.err ? a.ipInfo.ranges.map(r => r.cidr).join(" ") : "",
+    a.flags.join("|"), a.recs.map(r => `[${SEVN[r.sev].toUpperCase()}] ${r.txt}`).join(" | ")]);
+  return "﻿" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
+}
+const maxOf = (...d) => d.filter(Boolean).sort().pop() || "";
+$("#csvBtn").onclick = () => download(`entra-apps-${stamp()}.csv`, csvOf(filtered()), "text/csv");
+$$("[data-csvall]").forEach(b => b.onclick = () => download(`entra-apps-full-${stamp()}.csv`, csvOf(byRisk(S.apps)), "text/csv"));
+
+/* ---------------- PowerPoint deck ---------------- */
+function loadLib(){ return new Promise((res, rej) => { if(window.PptxGenJS) return res();
+  const urls = ["https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js", "https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"];
+  const next = i => { if(i >= urls.length) return rej(new Error("lib")); const s = document.createElement("script"); s.src = urls[i]; s.onload = () => window.PptxGenJS ? res() : next(i + 1); s.onerror = () => next(i + 1); document.head.appendChild(s); };
+  next(0); }); }
+async function deck(){
+  if(!S.raw) return;
+  toast(t("deckBuilding"));
+  try{ await loadLib(); }catch{ toast(t("deckFail")); return; }
+  const p = new window.PptxGenJS(); p.layout = "LAYOUT_WIDE"; p.author = "Entra App Cleanup"; p.title = t("dTitle");
+  const W = 13.333, FONT = "Segoe UI", INK = "242424", MUTE = "616161", BRAND = "0F6CBD", LINE = "E0E0E0";
+  const SEVC = ["107C10", "616161", "8A5300", "8A3707", "C50F1F"];
+  const tk = SS.get("tok");
+  const org = S.raw.demo ? "contoso.onmicrosoft.com (demo)" : (tk?.tenant || S.cfg.tenant || "");
+  const today = fmtDate(new Date().toISOString());
+  const A = byRisk(S.apps);
+  const frame = (s, title, sub) => { s.background = {color:"FFFFFF"};
+    s.addShape(p.ShapeType.rect, {x:0, y:0, w:W, h:0.1, fill:{color:BRAND}, line:{color:BRAND}});
+    s.addText(title, {x:0.5, y:0.3, w:W - 1, h:0.6, fontFace:FONT, fontSize:26, bold:true, color:INK});
+    if(sub) s.addText(sub, {x:0.5, y:0.88, w:W - 1, h:0.35, fontFace:FONT, fontSize:13, color:MUTE});
+    s.addText([org, "Entra App Cleanup", today].filter(Boolean).join("  ·  "), {x:0.5, y:7.05, w:9, h:0.3, fontFace:FONT, fontSize:9, color:"8A8A8A"}); };
+  const hdr = cols => cols.map(h => ({text:h, options:{bold:true, color:"FFFFFF", fill:{color:BRAND}}}));
+  const sevCell = s => ({text:t("sev_" + SEVN[s]), options:{bold:true, color:SEVC[s]}});
+  const lvCell = l => ({text:t("l_" + LVN[l]), options:{bold:true, color:SEVC[l]}});
+  const n = f => A.filter(f).length;
+
+  // 1. Title
+  let s = p.addSlide(); s.background = {color:"1B1A19"};
+  [["F25022", 0], ["7FBA00", 1], ["00A4EF", 2], ["FFB900", 3]].forEach(([c, i]) => s.addShape(p.ShapeType.rect, {x:0.6 + (i % 2) * 0.32, y:0.6 + Math.floor(i / 2) * 0.32, w:0.28, h:0.28, fill:{color:c}, line:{color:c}}));
+  s.addText(t("dTitle"), {x:0.6, y:2.2, w:12, h:1, fontFace:FONT, fontSize:40, bold:true, color:"FFFFFF"});
+  s.addText(org + "  ·  " + today, {x:0.6, y:3.2, w:12, h:0.5, fontFace:FONT, fontSize:20, color:"C2C2C2"});
+  s.addText([
+    {text:A.length + " ", options:{bold:true, color:"FFFFFF"}}, {text:t("kTotal") + "   ·   ", options:{color:"C2C2C2"}},
+    {text:n(a => a.risk === 4) + " ", options:{bold:true, color:"F1707B"}}, {text:t("sev_crit") + "   ·   ", options:{color:"C2C2C2"}},
+    {text:n(a => a.tier >= 3) + " ", options:{bold:true, color:"F4A266"}}, {text:t("kSens") + "   ·   ", options:{color:"C2C2C2"}},
+    {text:n(a => a.verdict === "delete") + " ", options:{bold:true, color:"FFFFFF"}}, {text:t("kDelete"), options:{color:"C2C2C2"}}],
+    {x:0.6, y:4.3, w:12, h:0.5, fontFace:FONT, fontSize:18});
+  s.addText(t("dGen") + " " + VERSION, {x:0.6, y:7.0, w:8, h:0.3, fontFace:FONT, fontSize:9, color:"8A8A8A"});
+
+  // 2. Where we stand
+  s = p.addSlide(); frame(s, t("dSyn"), t("dSynSub", A.length, S.cfg.inactive));
+  const tiles = [[t("kSens"), n(a => a.tier >= 3), "C50F1F"], [t("kRisk"), n(a => a.flags.includes("risk")), "C50F1F"], [t("kDelete"), n(a => a.verdict === "delete"), "C50F1F"],
+    [t("kOwner"), n(a => a.ownerState !== "ok"), "8A3707"], [t("kUnres"), n(a => a.unrestricted), "8A5300"]];
+  tiles.forEach((x, i) => { const xx = 0.5 + i * 2.5; s.addShape(p.ShapeType.rect, {x:xx, y:1.4, w:2.3, h:1.1, fill:{color:"FAFAFA"}, line:{color:LINE}});
+    s.addText(x[0], {x:xx + 0.15, y:1.46, w:2.05, h:0.42, fontFace:FONT, fontSize:10.5, color:MUTE, valign:"top"});
+    s.addText(String(x[1]), {x:xx + 0.15, y:1.86, w:2.05, h:0.55, fontFace:FONT, fontSize:24, bold:true, color:x[2]}); });
+  const sevCounts = [4, 3, 2, 1, 0].map(v => n(a => a.risk === v)), tierCounts = [4, 3, 2, 1, 0].map(v => n(a => a.tier === v));
+  const chartOpt = (x, title, colors) => ({x, y:2.8, w:6, h:4.1, barDir:"bar", chartColors:colors, showValue:true, dataLabelFontSize:11, catAxisLabelFontSize:11, valAxisLabelFontSize:9,
+    catAxisLabelFontFace:FONT, showLegend:false, showTitle:true, title, titleFontSize:13, titleFontFace:FONT, titleColor:INK, valGridLine:{color:"EEEEEE", size:0.5}, catAxisOrientation:"maxMin"});
+  s.addChart(p.ChartType.bar, [{name:t("dBySev"), labels:[4, 3, 2, 1, 0].map(v => t("sev_" + SEVN[v])), values:sevCounts}], chartOpt(0.5, t("dBySev"), ["C50F1F", "8A3707", "8A5300", "8A8A8A", "107C10"]));
+  s.addChart(p.ChartType.bar, [{name:t("dByTier"), labels:[4, 3, 2, 1, 0].map(v => t("l_" + LVN[v])), values:tierCounts}], chartOpt(6.8, t("dByTier"), ["C50F1F", "8A3707", "8A5300", "8A8A8A", "D1D1D1"]));
+
+  // 3. Action plan (recommendations grouped)
+  const groups = new Map();
+  A.forEach(a => a.recs.forEach(r => { const g = groups.get(r.key) || {key:r.key, sev:0, apps:[]}; g.sev = Math.max(g.sev, r.sev); g.apps.push(a); groups.set(r.key, g); }));
+  const G = [...groups.values()].sort((x, y) => y.sev - x.sev || y.apps.length - x.apps.length);
+  const perPlan = 12;
+  for(let pg = 0; pg < Math.max(1, Math.ceil(G.length / perPlan)) && pg < 2; pg++){
+    s = p.addSlide(); frame(s, t("dPlan"), t("dPlanSub"));
+    const rows = [hdr([t("cSev"), t("cReco"), t("dApps_n"), t("dExamples")])];
+    G.slice(pg * perPlan, pg * perPlan + perPlan).forEach(g => rows.push([sevCell(g.sev), {text:t("rs_" + g.key), options:{bold:true}}, {text:String(g.apps.length), options:{align:"center"}},
+      {text:g.apps.slice(0, 4).map(a => a.name).join(", ") + (g.apps.length > 4 ? " …" : ""), options:{color:MUTE}}]));
+    s.addTable(rows, {x:0.5, y:1.4, w:12.3, colW:[1.3, 3.6, 0.9, 6.5], fontFace:FONT, fontSize:11, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", rowH:0.42, autoPage:false});
+  }
+
+  // 4. Apps by criticality
+  const todo = A.filter(a => a.risk >= 2), per = 11, pages = Math.max(1, Math.ceil(todo.length / per)), maxPages = Math.min(pages, 5);
+  for(let pg = 0; pg < maxPages; pg++){
+    s = p.addSlide(); frame(s, t("dApps"), t("dAppsSub", todo.length, pg + 1, pages));
+    const rows = [hdr(["#", t("cSev"), t("cName"), t("cTier"), t("cLast"), t("cAssign"), t("cOwners"), t("cReco")])];
+    todo.slice(pg * per, pg * per + per).forEach((a, i) => rows.push([{text:String(pg * per + i + 1), options:{bold:true}}, sevCell(a.risk),
+      {text:[{text:a.name, options:{bold:true, breakLine:true}}, {text:[a.appOnly ? t("tAppOnly") : "", a.delegated ? t("tDel") : ""].filter(Boolean).join(" + ") || "—", options:{color:MUTE, fontSize:8.5}}]},
+      lvCell(a.tier), {text:a.sign === "unknown" ? "—" : agoTxt(a.last)},
+      {text:a.asgReq === null ? t("asg_na") : a.asgReq ? t("asg_yes") : t("asg_no"), options:{color:a.unrestricted ? "8A5300" : INK}},
+      {text:a.ownerState === "none" ? t("o_none") : a.owners.slice(0, 2).map(o => o.name).join(", "), options:{color:a.ownerState === "ok" ? INK : "C50F1F"}},
+      {text:a.recs.slice(0, 2).map(r => t("rs_" + r.key)).join(" · ")}]));
+    if(todo.length) s.addTable(rows, {x:0.5, y:1.35, w:12.3, colW:[0.45, 1.0, 2.6, 0.95, 1.2, 1.35, 1.75, 3.0], fontFace:FONT, fontSize:9.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", rowH:0.46, autoPage:false});
+    else s.addText(t("r_ok"), {x:0.5, y:2, w:12, h:0.5, fontFace:FONT, fontSize:16, color:"107C10"});
+  }
+
+  // 5. Critical app cards
+  A.filter(a => a.risk === 4).slice(0, 12).forEach(a => {
+    s = p.addSlide(); frame(s, t("dCard") + " · " + a.name, `${a.appId}  ·  ${t("cTier")} ${t("l_" + LVN[a.tier])}  ·  ${t("cLast")} ${a.sign === "unknown" ? "—" : agoTxt(a.last)}`);
+    const facts = [[t("fVerdict"), t("v_" + a.verdict)], [t("fAsgL"), a.asgReq === null ? t("asg_na") : a.asgReq ? t("asg_yes") : t("asg_no")],
+      [t("cOwners"), a.ownerState === "none" ? t("o_none") : a.owners.map(o => o.name + (o.disabled ? " (" + t("disabled") + ")" : "")).join(", ")],
+      [t("cCreds"), [a.validSecrets ? t("fSecrets", a.validSecrets) : "", a.validCerts ? t("fCerts", a.validCerts) : "", a.expired ? t("fExpired", a.expired) : ""].filter(Boolean).join(", ") || t("none")],
+      [t("fAudience"), a.audience]];
+    s.addTable(facts.map(([k, v]) => [{text:k, options:{bold:true, color:MUTE}}, {text:v}]), {x:0.5, y:1.4, w:5.9, colW:[1.9, 4.0], fontFace:FONT, fontSize:10.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, rowH:0.36});
+    const pr = [...a.appPerms, ...a.delPerms].sort((x, y) => y.level - x.level).slice(0, 9);
+    s.addText(t("flyPerms"), {x:0.5, y:3.45, w:5.9, h:0.35, fontFace:FONT, fontSize:13, bold:true, color:INK});
+    if(pr.length) s.addTable([hdr([t("pType"), t("pPerm"), t("pLevel")])].concat(pr.map(x => [{text:x.kind === "app" ? t("pApp") : t("pDel")}, {text:x.value + " (" + x.res + ")"}, lvCell(x.level)])),
+      {x:0.5, y:3.85, w:5.9, colW:[1.2, 3.6, 1.1], fontFace:FONT, fontSize:9.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, rowH:0.3, autoPage:false});
+    else s.addText(t("pNone"), {x:0.5, y:3.85, w:5.9, h:0.3, fontFace:FONT, fontSize:11, color:MUTE});
+    s.addText(t("flyReco"), {x:6.8, y:1.4, w:6, h:0.35, fontFace:FONT, fontSize:13, bold:true, color:INK});
+    s.addText(a.recs.slice(0, 7).map(r => ({text:"[" + t("sev_" + SEVN[r.sev]) + "]  " + r.txt, options:{bullet:true, breakLine:true, color:SEVC[r.sev] === "616161" ? INK : INK}})),
+      {x:6.8, y:1.8, w:6, h:a.ipInfo?.ranges?.length ? 3.4 : 5.1, fontFace:FONT, fontSize:10.5, color:INK, valign:"top", paraSpaceAfter:6});
+    if(a.ipInfo && !a.ipInfo.err && a.ipInfo.ranges.length){
+      const nm = caNames(a);
+      s.addShape(p.ShapeType.rect, {x:6.8, y:5.3, w:6, h:1.6, fill:{color:"EBF3FC"}, line:{color:"B4D6FA"}});
+      s.addText([{text:t("flyWid"), options:{bold:true, breakLine:true}}, {text:t("ipHead", a.ipInfo.events, a.ipInfo.ips.length, ""), options:{breakLine:true}},
+        {text:t("dRanges") + " : " + a.ipInfo.ranges.map(r => r.cidr).slice(0, 8).join(", ") + (a.ipInfo.ranges.length > 8 ? " …" : ""), options:{breakLine:true, fontFace:"Consolas", fontSize:9}},
+        {text:t("dPolicy") + " : " + nm.pol + " (report-only)"}], {x:6.95, y:5.35, w:5.7, h:1.5, fontFace:FONT, fontSize:10, color:INK, valign:"top"});
+    }
+  });
+
+  // 6. Workload identity CA
+  s = p.addSlide(); frame(s, t("dWid"), t("dWidSub"));
+  const W2 = A.filter(a => a.appOnly && a.ipInfo && !a.ipInfo.err).sort((x, y) => y.tier - x.tier);
+  if(W2.length){
+    const rows = [hdr([t("cName"), t("cTier"), t("ipCount"), "IP", t("dRanges"), t("dPolicy")])];
+    W2.slice(0, 13).forEach(a => rows.push([{text:a.name, options:{bold:true}}, lvCell(a.tier), {text:String(a.ipInfo.events)}, {text:String(a.ipInfo.ips.length)},
+      {text:a.ipInfo.ranges.map(r => r.cidr).slice(0, 4).join(", ") + (a.ipInfo.ranges.length > 4 ? " …" : "") || "—", options:{fontFace:"Consolas", fontSize:8.5}},
+      {text:a.ipInfo.ranges.length ? caNames(a).pol : t("ipNone"), options:{color:MUTE}}]));
+    s.addTable(rows, {x:0.5, y:1.4, w:12.3, colW:[2.4, 1.0, 1.0, 0.7, 3.4, 3.8], fontFace:FONT, fontSize:10, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", rowH:0.38, autoPage:false});
+  } else s.addText(t("dWidNone"), {x:0.5, y:1.6, w:12, h:0.6, fontFace:FONT, fontSize:15, color:"8A5300"});
+
+  // 7. Method
+  s = p.addSlide(); frame(s, t("dMethod"), "");
+  s.addText(T[LANG].dMethodItems.map(x => ({text:x, options:{bullet:true, breakLine:true}})), {x:0.5, y:1.3, w:12.3, h:5.5, fontFace:FONT, fontSize:14, color:INK, valign:"top", paraSpaceAfter:10});
+
+  const name = "EntraAppCleanup-" + (org || "tenant").replace(/[^a-z0-9]+/gi, "-") + "-" + stamp() + ".pptx";
+  try{ await p.writeFile({fileName:name}); toast(t("deckDone")); }catch{ toast(t("deckFail")); }
+}
+$$("[data-deck]").forEach(b => b.onclick = deck);
 
 /* ---------------- demo data ---------------- */
+let seed = 42; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const pick = a => a[Math.floor(rnd() * a.length)];
+const guid = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.floor(rnd() * 16); return (c === "x" ? r : (r & 3) | 8).toString(16); });
 function demoData(){
-  let seed = 42; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const pick = a => a[Math.floor(rnd() * a.length)];
+  seed = 42;
   const iso = d => new Date(Date.now() - d * DAY).toISOString();
-  const guid = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.floor(rnd() * 16); return (c === "x" ? r : (r & 3) | 8).toString(16); });
   const people = [["Alex Martin", "alex.martin"], ["Camille Durand", "camille.durand"], ["Sam Patel", "sam.patel"], ["Léa Bernard", "lea.bernard"], ["Jordan Lee", "jordan.lee"], ["Nora Petit", "nora.petit"]];
   const names = ["HR Portal", "Power BI Embedded", "SAP Connector", "Legacy Intranet", "Ticketing Webhook", "POC Chatbot", "Backup Service", "Expense App", "SharePoint Migration Tool", "Teams Bot - Helpdesk", "Jenkins CI", "Terraform Pipeline", "Old CRM Sync", "Marketing Forms", "Copilot Plugin Test", "Azure DevOps Sync", "Badge Reader API", "Payroll Export", "Graph Explorer Test", "Intune Reporting", "Datadog Integration", "ServiceNow Connector", "Mailbox Audit Script", "Test App 1", "Test App 2", "Defender Automation", "Fabric Ingestion", "Logic Apps Connector", "Survey Tool", "Partner Portal", "Webinar Platform", "Archive Reader", "MFA Report", "Sentinel Playbook", "Signature Manager", "Room Booking", "Visitor Kiosk", "Cost Dashboard", "AI Lab Sandbox", "Wiki Sync"];
-  const apps = [], signins = [], creds = [];
-  names.forEach((n, i) => {
-    const id = guid(), appId = guid(), age = 20 + Math.floor(rnd() * 1400);
+  const graphRoles = ["User.Read.All", "Directory.Read.All", "Mail.Send", "Mail.ReadWrite", "Sites.FullControl.All", "Sites.Read.All", "Sites.Selected", "Application.ReadWrite.All", "Group.ReadWrite.All", "AuditLog.Read.All", "DeviceManagementManagedDevices.Read.All", "Calendars.Read", "RoleManagement.ReadWrite.Directory", "Files.Read.All", "Reports.Read.All"];
+  const graphScopes = ["User.Read", "openid", "profile", "offline_access", "Mail.Read", "Files.ReadWrite.All", "Sites.Read.All", "Calendars.ReadWrite", "Directory.AccessAsUser.All", "Group.Read.All", "Team.ReadBasic.All"];
+  const graph = {id:guid(), appId:RES.GRAPH, name:"Microsoft Graph", roles:{}, scopes:{}};
+  graphRoles.forEach(v => graph.roles["r-" + v] = v); graphScopes.forEach(v => graph.scopes["s-" + v] = v);
+  const exo = {id:guid(), appId:RES.EXO, name:"Office 365 Exchange Online", roles:{"r-full_access_as_app":"full_access_as_app", "r-Exchange.ManageAsApp":"Exchange.ManageAsApp"}, scopes:{}};
+  const resources = [graph, exo], sps = [graph, exo].map(r => ({id:r.id, appId:r.appId, displayName:r.name, appRoleAssignmentRequired:false}));
+  const apps = [], signins = [], creds = [], assignments = [], grants = [];
+  names.forEach(n => {
+    const id = guid(), appId = guid(), spId = guid(), age = 20 + Math.floor(rnd() * 1400);
     const kind = rnd();
     const last = kind < .15 ? null : kind < .35 ? 100 + Math.floor(rnd() * 500) : Math.floor(rnd() * 60);
     const nOwners = rnd() < .3 ? 0 : 1 + Math.floor(rnd() * 3);
-    const owners = [...new Set(Array.from({length:nOwners}, () => pick(people)))].map(p => { return {"@odata.type":"#microsoft.graph.user", id:guid(), displayName:p[0], userPrincipalName:p[1] + "@contoso.com", accountEnabled:rnd() > .25}; });
+    const owners = [...new Set(Array.from({length:nOwners}, () => pick(people)))].map(p => ({"@odata.type":"#microsoft.graph.user", id:guid(), displayName:p[0], userPrincipalName:p[1] + "@contoso.com", accountEnabled:rnd() > .25}));
     const pw = Array.from({length:Math.floor(rnd() * 3)}, () => { const st = Math.floor(rnd() * 900); const len = pick([180, 365, 730, 1095]); return {keyId:guid(), displayName:pick(["prod", "dev", "pipeline", "", "temp"]), hint:"Ab" + Math.floor(rnd() * 9), startDateTime:iso(st), endDateTime:iso(st - len)}; });
     const kc = rnd() < .2 ? [{keyId:guid(), displayName:"CN=" + n.replace(/\W/g, ""), startDateTime:iso(200), endDateTime:iso(200 - 730), usage:"Verify", type:"AsymmetricX509Cert"}] : [];
-    apps.push({id, appId, displayName:n, createdDateTime:iso(age), signInAudience:rnd() < .15 ? "AzureADMultipleOrgs" : "AzureADMyOrg", publisherDomain:"contoso.com", passwordCredentials:pw, keyCredentials:kc, owners});
+    const style = rnd(); // daemon, web, both
+    const rra = [{resourceAppId:RES.GRAPH, resourceAccess:[]}];
+    const benign = ["User.Read.All", "Reports.Read.All", "Sites.Selected", "Calendars.Read", "DeviceManagementManagedDevices.Read.All", "AuditLog.Read.All"];
+    const rolePick = () => rnd() < .3 ? pick(graphRoles) : pick(benign);
+    const roles = style < .45 ? Array.from({length:1 + Math.floor(rnd() * 2)}, rolePick) : style > .85 ? [rolePick()] : [];
+    const scopes = style >= .45 ? ["User.Read", "openid", "profile", ...Array.from({length:Math.floor(rnd() * 3)}, () => pick(graphScopes))] : [];
+    [...new Set(roles)].forEach(v => rra[0].resourceAccess.push({id:"r-" + v, type:"Role"}));
+    [...new Set(scopes)].forEach(v => rra[0].resourceAccess.push({id:"s-" + v, type:"Scope"}));
+    if(rnd() < .04) rra.push({resourceAppId:RES.EXO, resourceAccess:[{id:"r-full_access_as_app", type:"Role"}]});
+    apps.push({id, appId, displayName:n, createdDateTime:iso(age), signInAudience:rnd() < .12 ? "AzureADMultipleOrgs" : "AzureADMyOrg", publisherDomain:"contoso.com", passwordCredentials:pw, keyCredentials:kc, owners, requiredResourceAccess:rra});
+    sps.push({id:spId, appId, displayName:n, appRoleAssignmentRequired:rnd() < .3});
+    rra.forEach(r => { const res = r.resourceAppId === RES.EXO ? exo : graph; r.resourceAccess.forEach(x => { if(x.type === "Role" && rnd() < .85) assignments.push({principalId:spId, resourceId:res.id, appRoleId:x.id}); }); });
+    const granted = [...new Set(scopes)].filter(() => rnd() < .9).join(" ");
+    if(granted) grants.push({clientId:spId, resourceId:graph.id, scope:granted, consentType:rnd() < .6 ? "AllPrincipals" : "Principal"});
     if(last !== null){
       const d = iso(Math.min(last, age));
-      signins.push({appId, lastSignInActivity:{lastSignInDateTime:d}, [rnd() < .5 ? "applicationAuthenticationClientSignInActivity" : "delegatedClientSignInActivity"]:{lastSignInDateTime:d}});
+      signins.push({appId, lastSignInActivity:{lastSignInDateTime:d}, [roles.length ? "applicationAuthenticationClientSignInActivity" : "delegatedClientSignInActivity"]:{lastSignInDateTime:d}});
       [...pw, ...kc].forEach(c => { if(rnd() < .6) creds.push({keyId:c.keyId, appId, signInActivity:{lastSignInDateTime:d}}); });
     }
   });
-  return {apps, signins, creds, signOk:true, credOk:true, signErr:"", credErr:"", scannedAt:new Date().toISOString(), demo:true};
+  return {apps, signins, creds, sps, resources, assignments, grants, ips:{}, signOk:true, credOk:true, permOk:true, grantOk:true, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:true};
+}
+async function demoIps(a){
+  await sleep(120);
+  const base = pick(["203.0.113", "198.51.100", "192.0.2"]);
+  const ips = [];
+  const k = 1 + Math.floor(rnd() * 4);
+  for(let i = 0; i < k; i++) ips.push({ip:`${base}.${10 + Math.floor(rnd() * 200)}`, count:5 + Math.floor(rnd() * 900), last:new Date(Date.now() - rnd() * 5 * DAY).toISOString(), where:pick(["Paris, FR", "Amsterdam, NL", "Dublin, IE"]), fail:0});
+  if(rnd() < .3) ips.push({ip:"2001:db8:10:20::" + Math.floor(rnd() * 99), count:12, last:new Date().toISOString(), where:"Paris, FR", fail:0});
+  ips.sort((p, q) => q.count - p.count);
+  return {at:new Date().toISOString(), events:ips.reduce((m, x) => m + x.count, 0), truncated:false, ips, ranges:toRanges(ips)};
 }
 $("#demoBtn").onclick = () => { readCfg(); S.raw = demoData(); evaluate(); renderAll(); go("overview"); };
 
 /* ---------------- wiring ---------------- */
 $("#signInBtn").onclick = async () => { readCfg(); const tk = SS.get("tok"); if(tk && tk.clientId === S.cfg.clientId && tk.tenant === S.cfg.tenant && await token()) scan(); else signIn(); };
 $("#reloadBtn").onclick = () => { readCfg(); scan(); };
-$("#outBtn").onclick = () => { if(S.raw?.demo && !SS.get("tok")){ S.raw = null; S.apps = []; renderAll(); go("connect"); } else signOut(); };
+$("#outBtn").onclick = () => { if(S.raw?.demo && !SS.get("tok")){ S.raw = null; S.apps = []; closeFly(); renderAll(); go("connect"); } else signOut(); };
 $("#copyRedir").onclick = () => copy(REDIRECT);
 ["#fInactive", "#fSoon"].forEach(id => $(id).onchange = () => { readCfg(); if(S.raw){ evaluate(); renderAll(); } });
 
@@ -1024,27 +1577,30 @@ function renderAll(){
   applyI18n(); renderConnect();
   $$("nav.side a.needdata").forEach(a => a.classList.toggle("off", !S.raw));
   if(S.raw){
-    renderOverview(); syncFilterUI(); renderApps(); renderCleanup();
+    renderOverview(); syncFilterUI(); renderApps(); renderSensitive(); renderCleanup();
     const notes = [];
     if(S.raw.demo) notes.push(t("demoOn"));
     if(!S.raw.signOk) notes.push(t("errSignNA", S.raw.signErr));
     else if(!S.raw.credOk) notes.push(t("errCredNA", S.raw.credErr));
+    if(!S.raw.permOk) notes.push(t("errPermNA", S.raw.permErr));
+    if(!S.raw.grantOk) notes.push(t("errGrantNA", S.raw.grantErr));
     if(notes.length) banner(notes.join(" "), S.raw.signOk ? "info" : "err",
       S.raw.demo ? `<button class="btn" type="button" onclick="document.getElementById('outBtn').click()">${esc(t("demoExit"))}</button>` : "");
-    else if($("#banner").classList.contains("info")) banner("");
-  } else { $("#cleanBadge").hidden = true; }
+    else banner("");
+    if(flyId && $("#fly").classList.contains("on")) openFly(flyId);
+  } else { $("#cleanBadge").hidden = true; $("#sensBadge").hidden = true; }
 }
 
 (async function init(){
   applyTheme();
-  S.f.flag = "";
   renderAll();
   try{
     if(await handleRedirect()){ renderAll(); go("connect"); await scan(); return; }
   }catch(e){ banner(t("errAuth", e.message), "err"); }
   const h = location.hash.slice(1);
-  go(["overview", "apps", "cleanup", "connect", "about"].includes(h) ? h : "connect");
+  go(["overview", "apps", "sensitive", "cleanup", "connect", "about"].includes(h) ? h : "connect");
 })();
+
 </script>
 </body>
 </html>

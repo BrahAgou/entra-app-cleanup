@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entra App Cleanup</title>
+<meta name="description" content="Sign in with your M365 admin account and clean up Entra ID app registrations: last sign-in, owners, active secrets. 100% client-side, read-only.">
+<style>
+/* Same Fluent look as Agent Governance Assessment: app bar, left navigation, cards, tables with pills, detail flyout. Light and dark themes. */
+:root{
+  --bg:#f5f5f5; --surface:#ffffff; --surface-2:#fafafa; --stroke:#e0e0e0; --stroke-2:#d1d1d1;
+  --text:#242424; --text-2:#616161; --text-3:#8a8a8a;
+  --brand:#0f6cbd; --brand-hover:#115ea3; --brand-bg:#ebf3fc; --appbar:#1b1a19; --appbar-text:#ffffff;
+  --pass:#107c10; --pass-bg:#dff6dd; --fail:#c50f1f; --fail-bg:#fde7e9; --inv:#8a5300; --inv-bg:#fff4ce;
+  --part:#8a3707; --part-bg:#fdebd8; --na:#616161; --na-bg:#f0f0f0;
+  --font:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --font-display:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"Cascadia Mono",Consolas,"SFMono-Regular",ui-monospace,monospace;
+  --shadow:0 1px 2px rgba(0,0,0,.08),0 0 2px rgba(0,0,0,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#1a1a1a; --surface:#262626; --surface-2:#2c2c2c; --stroke:#3a3a3a; --stroke-2:#4a4a4a;
+  --text:#f2f2f2; --text-2:#c2c2c2; --text-3:#8f8f8f;
+  --brand:#479ef5; --brand-hover:#62abf5; --brand-bg:#082338; --appbar:#0d0d0d;
+  --pass:#54b054; --pass-bg:#0e2e0e; --fail:#f1707b; --fail-bg:#3b1013; --inv:#f2c661; --inv-bg:#3a2d05;
+  --part:#f4a266; --part-bg:#3a1e08; --na:#adadad; --na-bg:#333;
+  --shadow:0 1px 2px rgba(0,0,0,.5); color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#1a1a1a; --surface:#262626; --surface-2:#2c2c2c; --stroke:#3a3a3a; --stroke-2:#4a4a4a;
+  --text:#f2f2f2; --text-2:#c2c2c2; --text-3:#8f8f8f;
+  --brand:#479ef5; --brand-hover:#62abf5; --brand-bg:#082338; --appbar:#0d0d0d;
+  --pass:#54b054; --pass-bg:#0e2e0e; --fail:#f1707b; --fail-bg:#3b1013; --inv:#f2c661; --inv-bg:#3a2d05;
+  --part:#f4a266; --part-bg:#3a1e08; --na:#adadad; --na-bg:#333;
+  --shadow:0 1px 2px rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.45 var(--font)}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;font-weight:600}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+a{color:var(--brand)}
+
+/* App bar */
+.appbar{height:48px;background:var(--appbar);color:var(--appbar-text);display:flex;align-items:center;gap:12px;padding:0 16px;position:sticky;top:0;z-index:20}
+.appbar .logo{width:22px;height:22px;display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.appbar .logo i{display:block;border-radius:2px}
+.appbar .name{font-weight:600;font-size:15px;white-space:nowrap}
+.appbar .name .short{display:none}
+.appbar .ed{font-size:12px;opacity:.7;white-space:nowrap}
+.appbar .sp{flex:1}
+.appbar .tenant{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36vw}
+.iconbtn{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:4px;height:30px;padding:0 10px;cursor:pointer;font-size:13px}
+.iconbtn:hover{background:rgba(255,255,255,.1)}
+.iconbtn[hidden]{display:none}
+.langsw{display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:4px;overflow:hidden}
+.langsw button{background:transparent;border:none;color:#fff;font-size:12px;font-weight:600;padding:0 9px;height:28px;cursor:pointer;opacity:.7}
+.langsw button[aria-pressed="true"]{background:rgba(255,255,255,.18);opacity:1}
+
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100% - 48px)}
+nav.side{background:var(--surface);border-right:1px solid var(--stroke);padding:12px 8px;display:flex;flex-direction:column;gap:2px;position:sticky;top:48px;height:calc(100vh - 48px)}
+nav.side a{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;color:var(--text);text-decoration:none;font-weight:500}
+nav.side a:hover{background:var(--surface-2)}
+nav.side a[aria-current="page"]{background:var(--brand-bg);color:var(--brand);position:relative}
+nav.side a[aria-current="page"]::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--brand)}
+nav.side a.off{opacity:.45;pointer-events:none}
+nav.side .grp{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;padding:14px 12px 4px;font-weight:600}
+nav.side svg{width:16px;height:16px;flex:none}
+nav.side .badge{margin-left:auto;font-size:11px;font-weight:700;border-radius:999px;padding:0 7px;background:var(--fail-bg);color:var(--fail)}
+main{padding:24px 28px 64px;min-width:0}
+.view{display:none;flex-direction:column;gap:20px;width:100%;max-width:2400px}
+.view.on{display:flex}
+.ph h1{font-size:24px}
+.ph p{margin:4px 0 0;color:var(--text-2);max-width:90ch}
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;border-radius:6px;background:var(--inv-bg);color:var(--text);border:1px solid color-mix(in srgb,var(--inv) 35%,transparent);font-size:13px;margin-bottom:16px}
+.banner.err{background:var(--fail-bg);border-color:color-mix(in srgb,var(--fail) 35%,transparent)}
+.banner.info{background:var(--brand-bg);border-color:color-mix(in srgb,var(--brand) 35%,transparent)}
+.banner[hidden]{display:none}
+
+.card{background:var(--surface);border:1px solid var(--stroke);border-radius:8px;box-shadow:var(--shadow);padding:16px}
+.card h2{font-size:16px;margin-bottom:2px}
+.card .sub{color:var(--text-2);font-size:13px;margin:0 0 12px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(5,1fr)}
+.kpi{cursor:pointer;border-top:3px solid var(--c,var(--stroke))}
+.kpi:hover{background:var(--surface-2)}
+.kpi .lbl{color:var(--text-2);font-size:13px;font-weight:600}
+.kpi .v{font-family:var(--font-display);font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15;margin-top:6px}
+.kpi .v small{font-size:15px;color:var(--text-2);font-weight:400}
+.kpi .foot{font-size:12px;color:var(--text-2);margin-top:6px}
+.halves{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--stroke);margin:6px 0 10px}
+.stack span{display:block;height:100%;background:var(--c)}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.legend button{all:unset;display:flex;gap:8px;align-items:center;cursor:pointer;padding:3px 4px;border-radius:4px}
+.legend button:hover{background:var(--surface-2)}
+.legend button:focus-visible{outline:2px solid var(--brand)}
+.legend i{width:10px;height:10px;border-radius:2px;background:var(--c);flex:none}
+.legend b{margin-left:auto;font-variant-numeric:tabular-nums}
+
+/* status pills */
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st-pass{background:var(--pass-bg);color:var(--pass)} .st-fail{background:var(--fail-bg);color:var(--fail)}
+.st-inv{background:var(--inv-bg);color:var(--inv)} .st-part{background:var(--part-bg);color:var(--part)}
+.st-na{background:var(--na-bg);color:var(--na)}
+.tag{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:0 6px;border:1px solid var(--stroke-2);color:var(--text-2);white-space:nowrap}
+.tag.bad{border-color:color-mix(in srgb,var(--fail) 50%,transparent);color:var(--fail);background:var(--fail-bg)}
+.tag.warn{border-color:color-mix(in srgb,var(--inv) 50%,transparent);color:var(--inv);background:var(--inv-bg)}
+.tag.ok{border-color:color-mix(in srgb,var(--pass) 50%,transparent);color:var(--pass);background:var(--pass-bg)}
+.muted{color:var(--text-2)}
+.small{font-size:12px}
+
+/* tables */
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+.tbl{font-size:13.5px}
+.tbl th{text-align:left;color:var(--text-2);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--stroke-2);white-space:nowrap;background:var(--surface);position:sticky;top:0}
+.tbl th button{all:unset;cursor:pointer}
+.tbl th button:focus-visible{outline:2px solid var(--brand)}
+.tbl th .ar{font-size:10px;margin-left:4px;color:var(--brand)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--stroke);vertical-align:middle}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover{background:var(--surface-2)}
+.tbl .t{font-weight:500}
+.tbl .id{font-family:var(--mono);font-size:12px;color:var(--text-2)}
+.tbl .meta{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap}
+.tbl td.num{font-variant-numeric:tabular-nums}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.search{flex:1 1 260px;min-width:200px;height:32px;border:1px solid var(--stroke-2);border-bottom-color:var(--text-2);border-radius:4px;background:var(--surface);padding:0 10px}
+.sel{height:32px;border:1px solid var(--stroke-2);border-radius:4px;background:var(--surface);padding:0 8px;min-width:120px}
+.btn{height:32px;border:1px solid var(--stroke-2);border-radius:4px;background:var(--surface);padding:0 12px;cursor:pointer;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--text)}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-hover)}
+[hidden]{display:none !important}
+.btn:disabled{opacity:.5;cursor:default}
+.count{color:var(--text-2);font-size:13px;margin-left:auto}
+.empty-st{padding:28px;text-align:center;color:var(--text-2)}
+.more{display:flex;justify-content:center;padding:12px}
+
+/* connect */
+.connect{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:12px;font-weight:600;color:var(--text-2)}
+.field input{border:1px solid var(--stroke-2);border-bottom-color:var(--text-2);border-radius:4px;background:var(--surface);padding:6px 8px;height:32px}
+.field small{color:var(--text-3);font-size:12px}
+.copyrow{display:flex;gap:6px}
+.copyrow code{flex:1;font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--stroke);border-radius:4px;padding:6px 8px;overflow:auto;white-space:nowrap}
+.actions-row{display:flex;gap:8px;flex-wrap:wrap}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+ol.steps code,.prose code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--stroke);border-radius:4px;padding:0 4px}
+.prose{max-width:85ch}
+.prose pre{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--stroke);border-radius:4px;padding:10px 12px;overflow-x:auto}
+
+/* progress */
+.progress{display:flex;flex-direction:column;gap:10px}
+.progress .row{display:flex;gap:10px;align-items:center;font-size:13px}
+.progress .row .s{width:18px;text-align:center;font-weight:700}
+.progress .row.done .s{color:var(--pass)} .progress .row.err .s{color:var(--fail)} .progress .row.warn .s{color:var(--inv)}
+.progress .row .c{margin-left:auto;color:var(--text-2);font-variant-numeric:tabular-nums}
+.spin{width:14px;height:14px;border:2px solid var(--stroke-2);border-top-color:var(--brand);border-radius:50%;animation:sp .8s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* flyout */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:30;display:none}
+.scrim.on{display:block}
+aside.fly{position:fixed;top:0;right:0;bottom:0;width:min(620px,100%);background:var(--surface);z-index:31;box-shadow:-8px 0 24px rgba(0,0,0,.2);transform:translateX(100%);transition:transform .18s ease;display:flex;flex-direction:column;visibility:hidden}
+aside.fly.on{transform:none;visibility:visible}
+.fly header{padding:16px 20px;border-bottom:1px solid var(--stroke);display:flex;gap:12px;align-items:flex-start}
+.fly header h2{font-size:18px;word-break:break-word}
+.fly header .sp{flex:1}
+.fly .body{padding:16px 20px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.fly h3{font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.facts div{background:var(--surface-2);border:1px solid var(--stroke);border-radius:6px;padding:8px;min-width:0;overflow-wrap:anywhere}
+.facts b{display:block;font-size:11px;color:var(--text-2);font-weight:600}
+.mini{font-size:13px}
+.mini td,.mini th{padding:6px 8px;border-bottom:1px solid var(--stroke);text-align:left}
+.mini th{color:var(--text-2);font-weight:600;font-size:12px}
+ul.todo{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+ul.todo li{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--stroke);border-radius:6px;background:var(--surface-2);font-size:13px}
+ul.todo li i{font-style:normal;font-weight:700;width:16px;flex:none}
+ul.todo li.bad i{color:var(--fail)} ul.todo li.warn i{color:var(--inv)} ul.todo li.ok i{color:var(--pass)}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none;place-items:center;padding:16px}
+.modal.on{display:grid}
+.modal .box{background:var(--surface);border-radius:8px;padding:20px;width:min(760px,100%);display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.modal textarea{min-height:320px;font-family:var(--mono);font-size:12px;border:1px solid var(--stroke-2);border-radius:4px;background:var(--surface-2);padding:10px;resize:vertical}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--surface);padding:8px 16px;border-radius:6px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+.toast.on{opacity:1}
+footer.f{color:var(--text-3);font-size:12px;margin-top:8px}
+
+@media (max-width:1200px){ .kpis{grid-template-columns:repeat(3,1fr)} .halves{grid-template-columns:1fr 1fr} .connect{grid-template-columns:1fr} }
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  nav.side{position:sticky;top:48px;height:auto;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--stroke);padding:6px;z-index:10}
+  nav.side .grp{display:none}
+  nav.side a{white-space:nowrap;padding:6px 10px}
+  nav.side a[aria-current="page"]::before{display:none}
+  main{padding:16px 16px 48px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .halves{grid-template-columns:1fr}
+  .appbar .ed,.appbar .tenant{display:none}
+  .facts{grid-template-columns:repeat(2,1fr)}
+  .hide-sm{display:none}
+}
+@media (max-width:640px){
+  .appbar{gap:8px;padding:0 10px}
+  .appbar .name .full{display:none}
+  .appbar .name .short{display:inline}
+  .toolbar .search{flex:1 1 100%}
+  .toolbar .sel{flex:1 1 45%;min-width:0}
+  .count{margin-left:0;width:100%}
+}
+@media (min-width:2000px){ html{zoom:1.12} }
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <span class="logo" aria-hidden="true"><i style="background:#f25022"></i><i style="background:#7fba00"></i><i style="background:#00a4ef"></i><i style="background:#ffb900"></i></span>
+  <span class="name"><span class="full">Entra App Cleanup</span><span class="short">EAC</span></span>
+  <span class="ed" data-i18n="edition"></span>
+  <span class="sp"></span>
+  <span class="tenant" id="tenantLbl"></span>
+  <span class="langsw" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="fr">FR</button></span>
+  <button class="iconbtn" id="themeBtn" type="button" data-i18n="theme"></button>
+  <button class="iconbtn" id="outBtn" type="button" data-i18n="signOut" hidden></button>
+</header>
+
+<div class="shell">
+<nav class="side" aria-label="Sections">
+  <div class="grp" data-i18n="grpReport"></div>
+  <a href="#overview" data-v="overview" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2h5v5H2zM9 2h5v3H9zM9 7h5v7H9zM2 9h5v5H2z"/></svg><span data-i18n="navOverview"></span></a>
+  <a href="#apps" data-v="apps" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 3h2v2H2zm4 0h8v2H6zM2 7h2v2H2zm4 0h8v2H6zm-4 4h2v2H2zm4 0h8v2H6z"/></svg><span data-i18n="navApps"></span></a>
+  <a href="#cleanup" data-v="cleanup" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 1h4v1.5h4V4H2V2.5h4zM3 5h10l-.8 10H3.8zm3 2v6h1.2V7zm2.8 0v6H10V7z"/></svg><span data-i18n="navCleanup"></span><span class="badge" id="cleanBadge" hidden></span></a>
+  <div class="grp" data-i18n="grpSetup"></div>
+  <a href="#connect" data-v="connect"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a3.5 3.5 0 0 1 3.5 3.5V6H13v9H3V6h1.5V4.5A3.5 3.5 0 0 1 8 1zm0 1.5a2 2 0 0 0-2 2V6h4V4.5a2 2 0 0 0-2-2zM7.25 9v3h1.5V9z"/></svg><span data-i18n="navConnect"></span></a>
+  <a href="#about" data-v="about"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3h1.5v1.5h-1.5zm0 3h1.5v5h-1.5z"/></svg><span data-i18n="navAbout"></span></a>
+</nav>
+
+<main>
+<div class="banner" id="banner" hidden><span id="bannerText"></span><span id="bannerAct"></span></div>
+
+<!-- CONNECT -->
+<section class="view" id="v-connect">
+  <div class="ph"><h1 data-i18n="cnTitle"></h1><p data-i18n="cnIntro"></p></div>
+  <div class="grid connect">
+    <div class="card">
+      <h2 data-i18n="cnSignin"></h2>
+      <p class="sub" data-i18n="cnSigninSub"></p>
+      <div class="field"><label for="fTenant" data-i18n="fTenant"></label><input id="fTenant" placeholder="contoso.onmicrosoft.com" autocomplete="off" spellcheck="false"><small data-i18n="fTenantHelp"></small></div>
+      <div class="field"><label for="fClient" data-i18n="fClient"></label><input id="fClient" placeholder="00000000-0000-0000-0000-000000000000" autocomplete="off" spellcheck="false"><small data-i18n="fClientHelp"></small></div>
+      <div class="field"><label data-i18n="fRedirect"></label><div class="copyrow"><code id="redirUri"></code><button class="btn" type="button" id="copyRedir" data-i18n="copy"></button></div><small data-i18n="fRedirectHelp"></small></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label for="fInactive" data-i18n="fInactive"></label><input id="fInactive" type="number" min="7" max="730" value="90"></div>
+        <div class="field"><label for="fSoon" data-i18n="fSoon"></label><input id="fSoon" type="number" min="1" max="365" value="30"></div>
+      </div>
+      <div class="actions-row">
+        <button class="btn primary" type="button" id="signInBtn" data-i18n="signIn"></button>
+        <button class="btn" type="button" id="reloadBtn" data-i18n="reload" hidden></button>
+        <button class="btn" type="button" id="demoBtn" data-i18n="demo"></button>
+      </div>
+      <div class="progress" id="progress" style="margin-top:16px" hidden></div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="cnSetup"></h2>
+      <p class="sub" data-i18n="cnSetupSub"></p>
+      <ol class="steps" id="setupSteps"></ol>
+    </div>
+  </div>
+</section>
+
+<!-- OVERVIEW -->
+<section class="view" id="v-overview">
+  <div class="ph"><h1 data-i18n="navOverview"></h1><p id="ovIntro"></p></div>
+  <div class="grid kpis" id="kpis"></div>
+  <div class="grid halves" id="dists"></div>
+  <div class="card">
+    <h2 data-i18n="topTitle"></h2><p class="sub" data-i18n="topSub"></p>
+    <div class="scroll"><table class="tbl" id="topTbl"></table></div>
+  </div>
+</section>
+
+<!-- APPS -->
+<section class="view" id="v-apps">
+  <div class="ph"><h1 data-i18n="navApps"></h1><p data-i18n="appsIntro"></p></div>
+  <div class="card">
+    <div class="toolbar">
+      <input class="search" id="q" type="search" data-i18n-ph="searchPh">
+      <select class="sel" id="fVerdict" aria-label="Verdict"></select>
+      <select class="sel" id="fSign" aria-label="Sign-in"></select>
+      <select class="sel" id="fOwner" aria-label="Owners"></select>
+      <select class="sel" id="fCred" aria-label="Credentials"></select>
+      <button class="btn" type="button" id="resetF" data-i18n="reset"></button>
+      <button class="btn" type="button" id="csvBtn" data-i18n="csv"></button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="scroll" style="margin-top:12px"><table class="tbl" id="appTbl"></table></div>
+    <div class="more" id="moreWrap" hidden><button class="btn" type="button" id="moreBtn"></button></div>
+  </div>
+</section>
+
+<!-- CLEANUP -->
+<section class="view" id="v-cleanup">
+  <div class="ph"><h1 data-i18n="navCleanup"></h1><p data-i18n="clIntro"></p></div>
+  <div class="grid halves" id="clCards"></div>
+  <div class="card prose">
+    <h2 data-i18n="clScriptTitle"></h2>
+    <p class="sub" data-i18n="clScriptSub"></p>
+    <div class="actions-row"><button class="btn primary" type="button" id="scriptBtn" data-i18n="clScriptBtn"></button><button class="btn" type="button" id="csvDelBtn" data-i18n="clCsvBtn"></button></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="view" id="v-about">
+  <div class="ph"><h1 data-i18n="navAbout"></h1></div>
+  <div class="card prose" id="aboutBody"></div>
+  <footer class="f">Entra App Cleanup · MIT · <a href="https://github.com/BrahAgou/entra-app-cleanup">github.com/BrahAgou/entra-app-cleanup</a></footer>
+</section>
+</main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="fly" id="fly" aria-modal="true" role="dialog" aria-labelledby="flyTitle">
+  <header><div><h2 id="flyTitle"></h2><div class="id muted small" id="flySub" style="font-family:var(--mono)"></div></div><span class="sp"></span><button class="btn" type="button" id="flyClose" data-i18n="close"></button></header>
+  <div class="body" id="flyBody"></div>
+</aside>
+
+<div class="modal" id="modal"><div class="box">
+  <h2 id="modalTitle"></h2><p class="muted small" id="modalSub" style="margin:0"></p>
+  <textarea id="modalText" readonly spellcheck="false"></textarea>
+  <div class="actions-row"><button class="btn primary" type="button" id="modalCopy" data-i18n="copy"></button><button class="btn" type="button" id="modalDl" data-i18n="download"></button><button class="btn" type="button" id="modalClose" data-i18n="close"></button></div>
+</div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Entra App Cleanup — 100% client-side, read-only.
+   Auth: OAuth 2.0 authorization code + PKCE (hand-coded, no MSAL),
+   redirect flow. Token kept in sessionStorage only.
+   Data: Microsoft Graph
+     v1.0 /applications (+ owners)
+     beta /reports/servicePrincipalSignInActivities
+     beta /reports/appCredentialSignInActivities
+   ============================================================ */
+const GRAPH = "https://graph.microsoft.com";
+const SCOPES = "openid profile offline_access https://graph.microsoft.com/Application.Read.All https://graph.microsoft.com/AuditLog.Read.All";
+const REDIRECT = location.origin + location.pathname;
+const DAY = 864e5;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem("eac." + k); return v == null ? d : JSON.parse(v); }catch{ return d; } },
+  set(k, v){ try{ localStorage.setItem("eac." + k, JSON.stringify(v)); }catch{} }
+};
+const SS = {
+  get(k){ try{ return JSON.parse(sessionStorage.getItem("eac." + k)); }catch{ return null; } },
+  set(k, v){ try{ sessionStorage.setItem("eac." + k, JSON.stringify(v)); }catch{} },
+  del(k){ try{ sessionStorage.removeItem("eac." + k); }catch{} }
+};
+
+/* ---------------- i18n ---------------- */
+const T = {
+en:{
+  edition:"Read-only · runs in your browser", theme:"Theme", signOut:"Sign out",
+  grpReport:"Report", grpSetup:"Setup", navOverview:"Overview", navApps:"App registrations", navCleanup:"Cleanup plan", navConnect:"Sign in", navAbout:"About",
+  cnTitle:"Sign in to your tenant", cnIntro:"Sign in with an admin account. The page reads your app registrations, their owners, their secrets and certificates, and their last sign-in. Nothing is written to your tenant and nothing leaves your browser.",
+  cnSignin:"Connection", cnSigninSub:"Values are saved in this browser only.",
+  fTenant:"Tenant ID or domain", fTenantHelp:"GUID or primary domain, e.g. contoso.onmicrosoft.com",
+  fClient:"Application (client) ID", fClientHelp:"The app registration you created for this page (see the steps on the right).",
+  fRedirect:"Redirect URI to register", fRedirectHelp:"Add this exact value as a Single-page application (SPA) redirect URI.",
+  fInactive:"Inactive after (days)", fSoon:"Expiring soon (days)",
+  signIn:"Sign in and scan", reload:"Rescan", demo:"Try with sample data", copy:"Copy", download:"Download", close:"Close", copied:"Copied",
+  cnSetup:"One-time setup", cnSetupSub:"Create one app registration for this page. No secret is needed: the page uses PKCE.",
+  steps:[
+    "Entra admin center → <b>App registrations</b> → <b>New registration</b>. Name: <code>Entra App Cleanup</code>, single tenant.",
+    "<b>Authentication</b> → <b>Add a platform</b> → <b>Single-page application</b> → paste the redirect URI shown on the left.",
+    "<b>API permissions</b> → Microsoft Graph → <b>Delegated</b>: <code>Application.Read.All</code> and <code>AuditLog.Read.All</code>, then <b>Grant admin consent</b>.",
+    "Sign in with an account that holds a read role, for example <b>Global Reader</b>, <b>Reports Reader</b> or <b>Security Reader</b>. Sign-in activity needs Entra ID P1 or P2.",
+    "Copy the <b>Application (client) ID</b> and the <b>Directory (tenant) ID</b> into the form."
+  ],
+  stApps:"App registrations and owners", stSign:"Sign-in activity per app", stCred:"Last use of each secret and certificate",
+  stSkip:"not available", errSignNA:"Sign-in activity is not available ({0}). Last sign-in and the delete verdict cannot be computed: check the AuditLog.Read.All consent, your role and your Entra ID P1/P2 licence.",
+  errCredNA:"The last use of each credential is not available ({0}). Everything else works.",
+  errAuth:"Sign-in failed: {0}", errExpired:"Your session has expired. Sign in again to rescan.", errGraph:"Graph error: {0}",
+  needCfg:"Enter the tenant and the client ID first.",
+  demoOn:"Sample data: fictitious apps to explore the page.", demoExit:"Leave the demo",
+  ovIntro:"{0} app registrations scanned on {1}. Inactive means no sign-in for {2} days.",
+  kTotal:"App registrations", kDelete:"Candidates to delete", kRisk:"Active secret, unused app", kOwner:"No active owner", kReview:"To review",
+  kTotalF:"in the tenant", kDeleteF:"never used or inactive", kRiskF:"remove first", kOwnerF:"no owner or all disabled", kReviewF:"still used, needs attention",
+  dSign:"Last sign-in", dOwner:"Owners", dCred:"Credentials",
+  topTitle:"Priority list", topSub:"Unused apps that still hold a valid secret or certificate come first: anyone holding the secret can still use them.",
+  appsIntro:"Select a row to see owners, credentials and what to do.",
+  searchPh:"Search by name, app ID or owner", reset:"Reset", csv:"Export CSV",
+  cName:"Application", cCreated:"Created", cLast:"Last sign-in", cOwners:"Owners", cCreds:"Credentials", cVerdict:"Verdict",
+  showing:"{0} of {1}", showMore:"Show {0} more",
+  allVerdict:"All verdicts", allSign:"All sign-in states", allOwner:"All owner states", allCred:"All credential states",
+  v_delete:"Delete", v_review:"Review", v_ok:"Keep", v_unknown:"Unknown",
+  s_active:"Active", s_stale:"Inactive", s_never:"Never", s_unknown:"Unknown", s_recent:"Recent, unused",
+  o_ok:"Has owner", o_none:"No owner", o_disabled:"Owners disabled",
+  c_active:"Valid secret", c_cert:"Valid certificate only", c_expired:"Expired only", c_none:"None", c_soon:"Expiring soon",
+  ago:"{0} d ago", today:"today", never:"never", none:"none",
+  fSecrets:"{0} secret(s)", fCerts:"{0} cert(s)", fExpired:"{0} expired",
+  tRisk:"Valid secret on unused app", tNoOwner:"No owner", tDisOwner:"Owners disabled", tExpired:"Expired credentials", tUnusedCred:"Credential never used", tSoon:"Expires soon", tLong:"Secret valid over 2 years", tMulti:"Multi-tenant",
+  flyFacts:"Summary", flySign:"Sign-in activity", flyOwners:"Owners", flyCreds:"Secrets and certificates", flyTodo:"What to do", flyOpen:"Open in Entra",
+  fCreatedL:"Created", fAudience:"Audience", fLastL:"Last sign-in", fVerdict:"Verdict", fAge:"Age", fPublisher:"Publisher domain",
+  sAny:"Any", sDelClient:"Delegated (as client)", sDelRes:"Delegated (as resource)", sAppClient:"App-only (as client)", sAppRes:"App-only (as resource)",
+  crType:"Type", crName:"Name", crEnd:"Expires", crUsed:"Last used", crStatus:"Status", secret:"Secret", cert:"Certificate",
+  cr_active:"Valid", cr_expired:"Expired", cr_soon:"Expires soon",
+  disabled:"disabled", sp:"service principal",
+  todoDelete:"No sign-in for more than {0} days and created over {0} days ago: confirm with the owner, then delete the app. A deleted app stays restorable for 30 days.",
+  todoRisk:"Remove the valid secrets and certificates now, even before the delete decision: they are the real exposure.",
+  todoNoOwner:"Assign at least two owners so someone answers for this app.",
+  todoDisOwner:"All owners are disabled accounts: assign active owners.",
+  todoExpired:"Remove the expired credentials: they are noise and hide the real ones.",
+  todoUnused:"A valid credential has never been used while the app signs in: it is probably a leftover, remove it.",
+  todoSoon:"A credential expires soon: rotate it, or let it expire if it is no longer used.",
+  todoLong:"A secret is valid for more than two years: prefer short secrets, a certificate or a managed identity.",
+  todoOk:"Nothing to clean up. Review again at the next pass.",
+  todoUnknown:"Sign-in activity is not available: the verdict cannot be computed.",
+  todoRecent:"Created less than {0} days ago and not used yet: check again later.",
+  clIntro:"The apps to act on, grouped by action. Nothing is changed from this page: export the list, check with the owners, then act.",
+  clA:"1. Remove secrets on unused apps", clASub:"Exposure today: unused apps that can still authenticate.",
+  clB:"2. Delete unused apps", clBSub:"Never used or inactive, older than the threshold.",
+  clC:"3. Give an owner", clCSub:"Apps still in use with no active owner.",
+  clD:"4. Remove expired credentials", clDSub:"Apps carrying expired secrets or certificates.",
+  clEmpty:"Nothing here.", clMore:"and {0} more",
+  clScriptTitle:"Cleanup script", clScriptSub:"Generates a Microsoft Graph PowerShell script for the delete candidates. Every delete line is commented out: you uncomment what you have validated. Deleted apps go to the recycle bin for 30 days.",
+  clScriptBtn:"Generate the script", clCsvBtn:"Export candidates (CSV)",
+  scriptTitle:"Cleanup script (PowerShell)", scriptSub:"Review each line. Delete lines are commented out on purpose.",
+  aboutHtml:`<h2>Why</h2><p>App registrations pile up: proofs of concept, old integrations, apps of people who left. Each one that still holds a valid secret is a way into the tenant that nobody watches. This page lists them, shows whether they are still used, who owns them and whether a secret is still valid, then proposes a cleanup order.</p>
+<h2>How the verdict is computed</h2><ul>
+<li><b>Delete</b>: no sign-in (delegated or app-only, as client or as resource) for more than the threshold, and the app is older than the threshold.</li>
+<li><b>Review</b>: the app is used but has no active owner, carries expired credentials, a credential never used, a credential about to expire or a secret valid over two years.</li>
+<li><b>Keep</b>: used, owned, clean.</li>
+<li><b>Unknown</b>: sign-in activity could not be read.</li></ul>
+<h2>Security</h2><ul><li>Delegated permissions only, read-only: <code>Application.Read.All</code>, <code>AuditLog.Read.All</code>.</li>
+<li>No backend, no telemetry. The token stays in this tab (sessionStorage) and is cleared on sign-out.</li>
+<li>Authorization code flow with PKCE, no client secret.</li></ul>
+<h2>Limits</h2><ul><li>Sign-in activity comes from the Graph beta reports and needs Entra ID P1 or P2.</li>
+<li>Activity is kept for a limited period: an app used once a year may look inactive. Always confirm with the owner.</li>
+<li>Only app registrations owned by this tenant are listed, not enterprise apps from other publishers.</li></ul>`
+},
+fr:{
+  edition:"Lecture seule · tourne dans votre navigateur", theme:"Thème", signOut:"Se déconnecter",
+  grpReport:"Rapport", grpSetup:"Configuration", navOverview:"Vue d'ensemble", navApps:"App registrations", navCleanup:"Plan de nettoyage", navConnect:"Connexion", navAbout:"À propos",
+  cnTitle:"Connexion au tenant", cnIntro:"Connectez-vous avec un compte d'administration. La page lit vos app registrations, leurs propriétaires, leurs secrets et certificats, et leur dernière connexion. Rien n'est écrit dans le tenant et rien ne sort de votre navigateur.",
+  cnSignin:"Connexion", cnSigninSub:"Les valeurs sont enregistrées dans ce navigateur uniquement.",
+  fTenant:"ID ou domaine du tenant", fTenantHelp:"GUID ou domaine principal, ex. contoso.onmicrosoft.com",
+  fClient:"ID d'application (client)", fClientHelp:"L'app registration créée pour cette page (voir les étapes à droite).",
+  fRedirect:"URI de redirection à déclarer", fRedirectHelp:"Ajoutez exactement cette valeur comme URI de redirection Single-page application (SPA).",
+  fInactive:"Inactive après (jours)", fSoon:"Expire bientôt (jours)",
+  signIn:"Se connecter et analyser", reload:"Relancer l'analyse", demo:"Essayer avec des données d'exemple", copy:"Copier", download:"Télécharger", close:"Fermer", copied:"Copié",
+  cnSetup:"Configuration unique", cnSetupSub:"Créez une app registration pour cette page. Aucun secret n'est nécessaire : la page utilise PKCE.",
+  steps:[
+    "Centre d'administration Entra → <b>Inscriptions d'applications</b> → <b>Nouvelle inscription</b>. Nom : <code>Entra App Cleanup</code>, locataire unique.",
+    "<b>Authentification</b> → <b>Ajouter une plateforme</b> → <b>Application monopage</b> → collez l'URI de redirection affichée à gauche.",
+    "<b>Autorisations d'API</b> → Microsoft Graph → <b>Déléguées</b> : <code>Application.Read.All</code> et <code>AuditLog.Read.All</code>, puis <b>Accorder le consentement administrateur</b>.",
+    "Connectez-vous avec un compte qui a un rôle de lecture, par exemple <b>Lecteur général</b>, <b>Lecteur de rapports</b> ou <b>Lecteur de sécurité</b>. L'activité de connexion demande Entra ID P1 ou P2.",
+    "Copiez l'<b>ID d'application (client)</b> et l'<b>ID de l'annuaire (locataire)</b> dans le formulaire."
+  ],
+  stApps:"App registrations et propriétaires", stSign:"Activité de connexion par app", stCred:"Dernière utilisation de chaque secret et certificat",
+  stSkip:"indisponible", errSignNA:"L'activité de connexion est indisponible ({0}). La dernière connexion et le verdict de suppression ne peuvent pas être calculés : vérifiez le consentement AuditLog.Read.All, votre rôle et votre licence Entra ID P1/P2.",
+  errCredNA:"La dernière utilisation de chaque identifiant est indisponible ({0}). Tout le reste fonctionne.",
+  errAuth:"Échec de la connexion : {0}", errExpired:"Votre session a expiré. Reconnectez-vous pour relancer l'analyse.", errGraph:"Erreur Graph : {0}",
+  needCfg:"Renseignez d'abord le tenant et l'ID client.",
+  demoOn:"Données d'exemple : apps fictives pour découvrir la page.", demoExit:"Quitter la démo",
+  ovIntro:"{0} app registrations analysées le {1}. Inactive signifie aucune connexion depuis {2} jours.",
+  kTotal:"App registrations", kDelete:"À supprimer", kRisk:"Secret valide, app inutilisée", kOwner:"Sans propriétaire actif", kReview:"À revoir",
+  kTotalF:"dans le tenant", kDeleteF:"jamais utilisées ou inactives", kRiskF:"à traiter en premier", kOwnerF:"aucun propriétaire ou tous désactivés", kReviewF:"utilisées, à corriger",
+  dSign:"Dernière connexion", dOwner:"Propriétaires", dCred:"Identifiants",
+  topTitle:"Liste prioritaire", topSub:"Les apps inutilisées qui ont encore un secret ou un certificat valide passent en premier : quiconque détient le secret peut encore s'en servir.",
+  appsIntro:"Sélectionnez une ligne pour voir les propriétaires, les identifiants et quoi faire.",
+  searchPh:"Rechercher par nom, app ID ou propriétaire", reset:"Réinitialiser", csv:"Exporter en CSV",
+  cName:"Application", cCreated:"Créée", cLast:"Dernière connexion", cOwners:"Propriétaires", cCreds:"Identifiants", cVerdict:"Verdict",
+  showing:"{0} sur {1}", showMore:"Afficher {0} de plus",
+  allVerdict:"Tous les verdicts", allSign:"Toutes les connexions", allOwner:"Tous les propriétaires", allCred:"Tous les identifiants",
+  v_delete:"Supprimer", v_review:"À revoir", v_ok:"À garder", v_unknown:"Inconnu",
+  s_active:"Active", s_stale:"Inactive", s_never:"Jamais", s_unknown:"Inconnue", s_recent:"Récente, inutilisée",
+  o_ok:"A un propriétaire", o_none:"Aucun propriétaire", o_disabled:"Propriétaires désactivés",
+  c_active:"Secret valide", c_cert:"Certificat valide seul", c_expired:"Expirés uniquement", c_none:"Aucun", c_soon:"Expire bientôt",
+  ago:"il y a {0} j", today:"aujourd'hui", never:"jamais", none:"aucun",
+  fSecrets:"{0} secret(s)", fCerts:"{0} certif.", fExpired:"{0} expiré(s)",
+  tRisk:"Secret valide sur app inutilisée", tNoOwner:"Aucun propriétaire", tDisOwner:"Propriétaires désactivés", tExpired:"Identifiants expirés", tUnusedCred:"Identifiant jamais utilisé", tSoon:"Expire bientôt", tLong:"Secret valide plus de 2 ans", tMulti:"Multi-tenant",
+  flyFacts:"Résumé", flySign:"Activité de connexion", flyOwners:"Propriétaires", flyCreds:"Secrets et certificats", flyTodo:"Quoi faire", flyOpen:"Ouvrir dans Entra",
+  fCreatedL:"Créée", fAudience:"Audience", fLastL:"Dernière connexion", fVerdict:"Verdict", fAge:"Âge", fPublisher:"Domaine éditeur",
+  sAny:"Toutes", sDelClient:"Déléguée (en client)", sDelRes:"Déléguée (en ressource)", sAppClient:"App seule (en client)", sAppRes:"App seule (en ressource)",
+  crType:"Type", crName:"Nom", crEnd:"Expire", crUsed:"Dernier usage", crStatus:"Statut", secret:"Secret", cert:"Certificat",
+  cr_active:"Valide", cr_expired:"Expiré", cr_soon:"Expire bientôt",
+  disabled:"désactivé", sp:"principal de service",
+  todoDelete:"Aucune connexion depuis plus de {0} jours et créée il y a plus de {0} jours : confirmez avec le propriétaire, puis supprimez l'app. Une app supprimée reste restaurable 30 jours.",
+  todoRisk:"Retirez dès maintenant les secrets et certificats valides, même avant la décision de suppression : c'est là qu'est l'exposition.",
+  todoNoOwner:"Désignez au moins deux propriétaires pour que quelqu'un réponde de cette app.",
+  todoDisOwner:"Tous les propriétaires sont des comptes désactivés : désignez des propriétaires actifs.",
+  todoExpired:"Retirez les identifiants expirés : ils brouillent la lecture et cachent les vrais.",
+  todoUnused:"Un identifiant valide n'a jamais servi alors que l'app se connecte : c'est sans doute un reste, retirez-le.",
+  todoSoon:"Un identifiant expire bientôt : renouvelez-le, ou laissez-le expirer s'il ne sert plus.",
+  todoLong:"Un secret est valide plus de deux ans : préférez des secrets courts, un certificat ou une identité managée.",
+  todoOk:"Rien à nettoyer. À revoir au prochain passage.",
+  todoUnknown:"L'activité de connexion est indisponible : le verdict ne peut pas être calculé.",
+  todoRecent:"Créée il y a moins de {0} jours et pas encore utilisée : à revérifier plus tard.",
+  clIntro:"Les apps sur lesquelles agir, regroupées par action. Rien n'est modifié depuis cette page : exportez la liste, validez avec les propriétaires, puis agissez.",
+  clA:"1. Retirer les secrets des apps inutilisées", clASub:"L'exposition actuelle : des apps inutilisées qui peuvent encore s'authentifier.",
+  clB:"2. Supprimer les apps inutilisées", clBSub:"Jamais utilisées ou inactives, plus anciennes que le seuil.",
+  clC:"3. Donner un propriétaire", clCSub:"Apps encore utilisées sans propriétaire actif.",
+  clD:"4. Retirer les identifiants expirés", clDSub:"Apps qui portent des secrets ou certificats expirés.",
+  clEmpty:"Rien ici.", clMore:"et {0} de plus",
+  clScriptTitle:"Script de nettoyage", clScriptSub:"Génère un script PowerShell Microsoft Graph pour les apps à supprimer. Chaque ligne de suppression est commentée : vous décommentez ce que vous avez validé. Les apps supprimées restent 30 jours dans la corbeille.",
+  clScriptBtn:"Générer le script", clCsvBtn:"Exporter les candidates (CSV)",
+  scriptTitle:"Script de nettoyage (PowerShell)", scriptSub:"Relisez chaque ligne. Les lignes de suppression sont commentées exprès.",
+  aboutHtml:`<h2>Pourquoi</h2><p>Les app registrations s'accumulent : POC, anciennes intégrations, apps de personnes parties. Chacune qui garde un secret valide est une porte d'entrée dans le tenant que personne ne surveille. Cette page les liste, montre si elles servent encore, à qui elles appartiennent et si un secret est encore valide, puis propose un ordre de nettoyage.</p>
+<h2>Comment le verdict est calculé</h2><ul>
+<li><b>Supprimer</b> : aucune connexion (déléguée ou app seule, en client ou en ressource) depuis plus que le seuil, et l'app est plus ancienne que le seuil.</li>
+<li><b>À revoir</b> : l'app sert mais n'a pas de propriétaire actif, porte des identifiants expirés, un identifiant jamais utilisé, un identifiant qui expire bientôt ou un secret valide plus de deux ans.</li>
+<li><b>À garder</b> : utilisée, avec propriétaire, propre.</li>
+<li><b>Inconnu</b> : l'activité de connexion n'a pas pu être lue.</li></ul>
+<h2>Sécurité</h2><ul><li>Permissions déléguées uniquement, en lecture : <code>Application.Read.All</code>, <code>AuditLog.Read.All</code>.</li>
+<li>Pas de backend, pas de télémétrie. Le jeton reste dans cet onglet (sessionStorage) et est effacé à la déconnexion.</li>
+<li>Flux authorization code avec PKCE, sans secret client.</li></ul>
+<h2>Limites</h2><ul><li>L'activité de connexion vient des rapports Graph beta et demande Entra ID P1 ou P2.</li>
+<li>L'activité est conservée sur une période limitée : une app utilisée une fois par an peut paraître inactive. Confirmez toujours avec le propriétaire.</li>
+<li>Seules les app registrations de ce tenant sont listées, pas les applications d'entreprise d'autres éditeurs.</li></ul>`
+}};
+let LANG = LS.get("lang", (navigator.language || "en").toLowerCase().startsWith("fr") ? "fr" : "en");
+const t = (k, ...a) => { let s = (T[LANG][k] ?? T.en[k] ?? k); a.forEach((v, i) => s = s.replace(new RegExp("\\{" + i + "\\}", "g"), v)); return s; };
+const fmtDate = d => d ? new Date(d).toLocaleDateString(LANG === "fr" ? "fr-FR" : "en-GB", {year:"numeric", month:"short", day:"numeric"}) : "—";
+const daysSince = d => d ? Math.floor((Date.now() - new Date(d).getTime()) / DAY) : null;
+const agoTxt = d => { if(!d) return t("never"); const n = daysSince(d); return n <= 0 ? t("today") : t("ago", n); };
+
+/* ---------------- state ---------------- */
+const S = {
+  cfg: Object.assign({tenant:"", clientId:"", inactive:90, soon:30}, LS.get("cfg", {})),
+  raw: null,           // { apps, signins, creds, signOk, credOk, signErr, credErr, scannedAt, demo }
+  apps: [],            // evaluated
+  view: "connect",
+  sort: {k:"prio", d:1},
+  shown: 100,
+  f: {q:"", verdict:"", sign:"", owner:"", cred:""}
+};
+
+/* ---------------- theme & lang ---------------- */
+function applyTheme(){ const th = LS.get("theme", ""); if(th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme; }
+$("#themeBtn").onclick = () => {
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+  LS.set("theme", dark ? "light" : "dark"); applyTheme();
+};
+$$(".langsw button").forEach(b => b.onclick = () => { LANG = b.dataset.lang; LS.set("lang", LANG); renderAll(); });
+function applyI18n(){
+  document.documentElement.lang = LANG;
+  $$("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
+  $$("[data-i18n-ph]").forEach(e => e.placeholder = t(e.dataset.i18nPh));
+  $$(".langsw button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === LANG));
+  $("#setupSteps").innerHTML = T[LANG].steps.map(s => `<li>${s}</li>`).join("");
+  $("#aboutBody").innerHTML = T[LANG].aboutHtml;
+}
+
+/* ---------------- banner & toast ---------------- */
+function banner(text, kind = "", actHtml = ""){
+  const b = $("#banner"); if(!text){ b.hidden = true; return; }
+  b.className = "banner " + kind; $("#bannerText").textContent = text; $("#bannerAct").innerHTML = actHtml; b.hidden = false;
+}
+function toast(msg){ const e = $("#toast"); e.textContent = msg; e.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => e.classList.remove("on"), 1600); }
+async function copy(txt){ try{ await navigator.clipboard.writeText(txt); toast(t("copied")); }catch{ const ta = document.createElement("textarea"); ta.value = txt; document.body.append(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast(t("copied")); } }
+function download(name, text, type = "text/plain"){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ---------------- auth (PKCE, redirect flow) ---------------- */
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+function jwtPayload(jwt){
+  try{ const p = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); return JSON.parse(decodeURIComponent(escape(atob(p + "===".slice((p.length + 3) % 4))))); }catch{ return {}; }
+}
+async function signIn(){
+  readCfg();
+  if(!S.cfg.tenant || !S.cfg.clientId){ banner(t("needCfg"), "err"); return; }
+  const verifier = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
+  const state = b64url(crypto.getRandomValues(new Uint8Array(16)));
+  SS.set("pkce", {verifier, state, tenant:S.cfg.tenant, clientId:S.cfg.clientId});
+  const p = new URLSearchParams({client_id:S.cfg.clientId, response_type:"code", redirect_uri:REDIRECT, response_mode:"query",
+    scope:SCOPES, state, code_challenge:challenge, code_challenge_method:"S256", prompt:"select_account"});
+  location.href = `https://login.microsoftonline.com/${encodeURIComponent(S.cfg.tenant)}/oauth2/v2.0/authorize?${p}`;
+}
+async function handleRedirect(){
+  const q = new URLSearchParams(location.search);
+  if(!q.has("code") && !q.has("error")) return false;
+  const saved = SS.get("pkce"); SS.del("pkce");
+  history.replaceState(null, "", REDIRECT + location.hash);
+  if(q.has("error")) throw new Error(q.get("error_description") || q.get("error"));
+  if(!saved || saved.state !== q.get("state")) throw new Error("state mismatch");
+  const body = new URLSearchParams({client_id:saved.clientId, grant_type:"authorization_code", code:q.get("code"),
+    redirect_uri:REDIRECT, code_verifier:saved.verifier, scope:SCOPES});
+  const r = await fetch(`https://login.microsoftonline.com/${encodeURIComponent(saved.tenant)}/oauth2/v2.0/token`,
+    {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body});
+  const j = await r.json();
+  if(!r.ok) throw new Error(j.error_description || j.error || r.status);
+  const id = jwtPayload(j.id_token || "");
+  SS.set("tok", {at:j.access_token, rt:j.refresh_token || null, exp:Date.now() + (j.expires_in - 60) * 1000,
+    tenant:saved.tenant, clientId:saved.clientId, user:id.preferred_username || id.name || "", tid:id.tid || ""});
+  return true;
+}
+async function token(){
+  const tk = SS.get("tok"); if(!tk) return null;
+  if(Date.now() < tk.exp) return tk.at;
+  if(tk.rt){ // SPA refresh tokens are allowed (24 h) and must be redeemed from the same origin
+    const body = new URLSearchParams({client_id:tk.clientId, grant_type:"refresh_token", refresh_token:tk.rt, scope:SCOPES});
+    const r = await fetch(`https://login.microsoftonline.com/${encodeURIComponent(tk.tenant)}/oauth2/v2.0/token`,
+      {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body});
+    if(r.ok){ const j = await r.json(); Object.assign(tk, {at:j.access_token, rt:j.refresh_token || tk.rt, exp:Date.now() + (j.expires_in - 60) * 1000}); SS.set("tok", tk); return tk.at; }
+  }
+  SS.del("tok"); return null;
+}
+function signOut(){
+  const tk = SS.get("tok"); SS.del("tok"); S.raw = null; S.apps = [];
+  if(tk){ location.href = `https://login.microsoftonline.com/${encodeURIComponent(tk.tenant)}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(REDIRECT)}`; }
+  else { renderAll(); go("connect"); }
+}
+
+/* ---------------- Graph ---------------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function g(url){
+  for(let i = 0; i < 6; i++){
+    const at = await token();
+    if(!at){ const e = new Error("expired"); e.expired = true; throw e; }
+    const r = await fetch(url.startsWith("http") ? url : GRAPH + url, {headers:{Authorization:"Bearer " + at}});
+    if(r.status === 429 || r.status === 503 || r.status === 504){ const ra = +r.headers.get("Retry-After"); await sleep((ra || 2 ** i) * 1000); continue; }
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok){ const e = new Error(j.error?.message || ("HTTP " + r.status)); e.status = r.status; e.code = j.error?.code; throw e; }
+    return j;
+  }
+  throw new Error("throttled");
+}
+async function gAll(url, onPage){
+  let out = [];
+  while(url){ const j = await g(url); out = out.concat(j.value || []); onPage && onPage(out.length); url = j["@odata.nextLink"]; }
+  return out;
+}
+
+/* ---------------- scan ---------------- */
+function progressUI(rows){
+  const p = $("#progress"); p.hidden = false;
+  p.innerHTML = rows.map(r => `<div class="row" id="pr-${r}"><span class="s"></span><span>${esc(t("st" + r))}</span><span class="c"></span></div>`).join("");
+}
+function prog(id, state, count = ""){
+  const r = $("#pr-" + id); if(!r) return;
+  r.className = "row " + state;
+  r.querySelector(".s").innerHTML = state === "run" ? '<span class="spin"></span>' : state === "done" ? "✓" : state === "err" ? "✕" : state === "warn" ? "!" : "";
+  r.querySelector(".c").textContent = count;
+}
+async function scan(){
+  banner("");
+  $("#signInBtn").disabled = $("#reloadBtn").disabled = true;
+  progressUI(["Apps", "Sign", "Cred"]);
+  const raw = {apps:[], signins:[], creds:[], signOk:false, credOk:false, signErr:"", credErr:"", scannedAt:new Date().toISOString(), demo:false};
+  try{
+    prog("Apps", "run");
+    const sel = "id,appId,displayName,createdDateTime,signInAudience,publisherDomain,passwordCredentials,keyCredentials";
+    const base = `/v1.0/applications?$select=${sel}&$top=100&$expand=`;
+    try{ raw.apps = await gAll(base + "owners($select=id,displayName,userPrincipalName,accountEnabled)", n => prog("Apps", "run", n)); }
+    catch(e){ if(e.expired) throw e; raw.apps = await gAll(base + "owners", n => prog("Apps", "run", n)); }
+    prog("Apps", "done", raw.apps.length);
+
+    prog("Sign", "run");
+    try{ raw.signins = await gAll("/beta/reports/servicePrincipalSignInActivities", n => prog("Sign", "run", n)); raw.signOk = true; prog("Sign", "done", raw.signins.length); }
+    catch(e){ if(e.expired) throw e; raw.signErr = e.message; prog("Sign", "warn", t("stSkip")); }
+
+    prog("Cred", "run");
+    try{ raw.creds = await gAll("/beta/reports/appCredentialSignInActivities", n => prog("Cred", "run", n)); raw.credOk = true; prog("Cred", "done", raw.creds.length); }
+    catch(e){ if(e.expired) throw e; raw.credErr = e.message; prog("Cred", "warn", t("stSkip")); }
+
+    S.raw = raw; evaluate(); renderAll(); go("overview");
+  }catch(e){
+    if(e.expired){ banner(t("errExpired"), "err"); SS.del("tok"); renderAll(); }
+    else banner(t("errGraph", e.message), "err");
+    $$("#progress .row").forEach(r => { if(r.classList.contains("run")) prog(r.id.slice(3), "err"); });
+  }finally{
+    $("#signInBtn").disabled = $("#reloadBtn").disabled = false;
+  }
+}
+
+/* ---------------- evaluation ---------------- */
+function evaluate(){
+  const R = S.raw; if(!R){ S.apps = []; return; }
+  const inact = +S.cfg.inactive || 90, soon = +S.cfg.soon || 30, now = Date.now();
+  const sMap = new Map(); R.signins.forEach(s => s.appId && sMap.set(s.appId.toLowerCase(), s));
+  const cMap = new Map();
+  R.creds.forEach(c => { if(!c.keyId) return; const d = c.signInActivity?.lastSignInDateTime || null; const prev = cMap.get(c.keyId); if(prev === undefined || (d && (!prev || d > prev))) cMap.set(c.keyId, d); });
+  const maxD = arr => arr.filter(Boolean).sort().pop() || null;
+
+  S.apps = R.apps.map(a => {
+    const s = sMap.get((a.appId || "").toLowerCase());
+    const acts = s ? {
+      any: s.lastSignInActivity?.lastSignInDateTime,
+      delClient: s.delegatedClientSignInActivity?.lastSignInDateTime,
+      delRes: s.delegatedResourceSignInActivity?.lastSignInDateTime,
+      appClient: s.applicationAuthenticationClientSignInActivity?.lastSignInDateTime,
+      appRes: s.applicationAuthenticationResourceSignInActivity?.lastSignInDateTime } : {};
+    const last = maxD(Object.values(acts));
+    const age = daysSince(a.createdDateTime) ?? 9999;
+    const recent = age < inact;
+
+    const creds = [
+      ...(a.passwordCredentials || []).map(c => ({type:"secret", keyId:c.keyId, name:c.displayName || (c.hint ? c.hint + "…" : ""), start:c.startDateTime, end:c.endDateTime})),
+      ...(a.keyCredentials || []).map(c => ({type:"cert", keyId:c.keyId, name:c.displayName || c.customKeyIdentifier || "", start:c.startDateTime, end:c.endDateTime, usage:c.usage}))
+    ].map(c => {
+      const left = c.end ? (new Date(c.end).getTime() - now) / DAY : -1;
+      c.status = left < 0 ? "expired" : left <= soon ? "soon" : "active";
+      c.lastUsed = R.credOk ? (cMap.get(c.keyId) ?? null) : undefined;
+      c.long = c.type === "secret" && c.start && c.end && (new Date(c.end) - new Date(c.start)) / DAY > 732;
+      return c;
+    });
+    const valid = creds.filter(c => c.status !== "expired");
+    const validSecrets = valid.filter(c => c.type === "secret").length;
+    const validCerts = valid.filter(c => c.type === "cert").length;
+    const expired = creds.filter(c => c.status === "expired").length;
+
+    const owners = (a.owners || []).map(o => ({name:o.displayName || o.userPrincipalName || o.id, upn:o.userPrincipalName || "",
+      isSp:(o["@odata.type"] || "").includes("servicePrincipal"), disabled:o.accountEnabled === false}));
+    const ownerState = owners.length === 0 ? "none" : owners.every(o => o.disabled) ? "disabled" : "ok";
+
+    let sign = !R.signOk ? "unknown" : !last ? "never" : daysSince(last) > inact ? "stale" : "active";
+    const unused = sign === "never" || sign === "stale";
+    const credState = validSecrets ? "active" : validCerts ? "cert" : expired ? "expired" : "none";
+
+    const flags = [];
+    if(unused && valid.length) flags.push("risk");
+    if(ownerState === "none") flags.push("noOwner");
+    if(ownerState === "disabled") flags.push("disOwner");
+    if(expired) flags.push("expired");
+    if(sign === "active" && R.credOk && valid.some(c => !c.lastUsed && daysSince(c.start) > inact)) flags.push("unusedCred");
+    if(valid.some(c => c.status === "soon")) flags.push("soon");
+    if(valid.some(c => c.long)) flags.push("long");
+
+    let verdict;
+    if(sign === "unknown") verdict = "unknown";
+    else if(unused && !recent) verdict = "delete";
+    else if(flags.some(f => ["noOwner", "disOwner", "expired", "unusedCred", "soon", "long", "risk"].includes(f))) verdict = "review";
+    else verdict = "ok";
+
+    // priority: lower is more urgent
+    const prio = (verdict === "delete" ? (flags.includes("risk") ? 0 : 1) : verdict === "review" ? (flags.includes("risk") ? 2 : 3) : verdict === "unknown" ? 4 : 5) * 1e6 - (daysSince(last) ?? age);
+    const signShown = unused && recent && sign === "never" ? "recent" : sign;
+
+    return {id:a.id, appId:a.appId, name:a.displayName || "(no name)", created:a.createdDateTime, age, audience:a.signInAudience || "", publisher:a.publisherDomain || "",
+      acts, last, sign, signShown, recent, owners, ownerState, creds, validSecrets, validCerts, expired, credState, flags, verdict, prio};
+  });
+}
+
+/* ---------------- render helpers ---------------- */
+const VCLS = {delete:"st-fail", review:"st-inv", ok:"st-pass", unknown:"st-na"};
+const SCLS = {active:"st-pass", stale:"st-part", never:"st-fail", unknown:"st-na", recent:"st-inv"};
+const pill = (cls, txt) => `<span class="pill ${cls}">${esc(txt)}</span>`;
+const vPill = a => pill(VCLS[a.verdict], t("v_" + a.verdict));
+const signCell = a => `${pill(SCLS[a.signShown], t("s_" + a.signShown))}${a.last ? `<div class="muted small">${esc(agoTxt(a.last))}</div>` : ""}`;
+function ownersCell(a){
+  if(a.ownerState === "none") return `<span class="tag bad">${esc(t("o_none"))}</span>`;
+  const first = a.owners.slice(0, 2).map(o => `<div class="${o.disabled ? "muted" : ""}">${esc(o.name)}${o.disabled ? ` <span class="tag warn">${esc(t("disabled"))}</span>` : ""}</div>`).join("");
+  return first + (a.owners.length > 2 ? `<div class="muted small">+${a.owners.length - 2}</div>` : "");
+}
+function credCell(a){
+  const parts = [];
+  if(a.validSecrets) parts.push(`<span class="tag ${a.sign === "never" || a.sign === "stale" ? "bad" : "ok"}">${esc(t("fSecrets", a.validSecrets))}</span>`);
+  if(a.validCerts) parts.push(`<span class="tag ${a.sign === "never" || a.sign === "stale" ? "bad" : "ok"}">${esc(t("fCerts", a.validCerts))}</span>`);
+  if(a.expired) parts.push(`<span class="tag">${esc(t("fExpired", a.expired))}</span>`);
+  return parts.join(" ") || `<span class="muted">${esc(t("none"))}</span>`;
+}
+const FLAGTAG = {risk:"bad", noOwner:"bad", disOwner:"warn", expired:"", unusedCred:"warn", soon:"warn", long:"warn"};
+const FLAGTXT = {risk:"tRisk", noOwner:"tNoOwner", disOwner:"tDisOwner", expired:"tExpired", unusedCred:"tUnusedCred", soon:"tSoon", long:"tLong"};
+const flagsHtml = a => a.flags.map(f => `<span class="tag ${FLAGTAG[f]}">${esc(t(FLAGTXT[f]))}</span>`).join("");
+
+/* ---------------- views ---------------- */
+function go(v){
+  if(!S.raw && ["overview", "apps", "cleanup"].includes(v)) v = "connect";
+  S.view = v;
+  $$(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  $$("nav.side a").forEach(a => { if(a.dataset.v === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  if(location.hash !== "#" + v) history.replaceState(null, "", "#" + v);
+  window.scrollTo(0, 0);
+}
+$$("nav.side a").forEach(a => a.onclick = e => { e.preventDefault(); go(a.dataset.v); });
+
+function renderConnect(){
+  $("#fTenant").value = S.cfg.tenant; $("#fClient").value = S.cfg.clientId;
+  $("#fInactive").value = S.cfg.inactive; $("#fSoon").value = S.cfg.soon;
+  $("#redirUri").textContent = REDIRECT;
+  const tk = SS.get("tok");
+  $("#reloadBtn").hidden = !tk;
+  $("#outBtn").hidden = !tk && !S.raw?.demo;
+  $("#outBtn").textContent = S.raw?.demo && !tk ? t("demoExit") : t("signOut");
+  $("#tenantLbl").textContent = S.raw?.demo ? "contoso.onmicrosoft.com (demo)" : tk ? `${tk.user} · ${tk.tenant}` : "";
+}
+function readCfg(){
+  S.cfg = {tenant:$("#fTenant").value.trim(), clientId:$("#fClient").value.trim(),
+    inactive:Math.max(7, +$("#fInactive").value || 90), soon:Math.max(1, +$("#fSoon").value || 30)};
+  LS.set("cfg", S.cfg);
+}
+
+function renderOverview(){
+  const A = S.apps, R = S.raw; if(!R) return;
+  $("#ovIntro").textContent = t("ovIntro", A.length, fmtDate(R.scannedAt), S.cfg.inactive);
+  const n = f => A.filter(f).length;
+  const k = [
+    {l:"kTotal", v:A.length, f:"kTotalF", c:"var(--brand)", go:{}},
+    {l:"kRisk", v:n(a => a.flags.includes("risk")), f:"kRiskF", c:"var(--fail)", go:{flag:"risk"}},
+    {l:"kDelete", v:n(a => a.verdict === "delete"), f:"kDeleteF", c:"var(--fail)", go:{verdict:"delete"}},
+    {l:"kOwner", v:n(a => a.ownerState !== "ok"), f:"kOwnerF", c:"var(--part)", go:{owner:"noactive"}},
+    {l:"kReview", v:n(a => a.verdict === "review"), f:"kReviewF", c:"var(--inv)", go:{verdict:"review"}}
+  ];
+  $("#kpis").innerHTML = k.map((x, i) => `<div class="card kpi" style="--c:${x.c}" role="button" tabindex="0" data-k="${i}"><div class="lbl">${esc(t(x.l))}</div><div class="v">${x.v}${i ? ` <small>${A.length ? Math.round(x.v / A.length * 100) : 0}%</small>` : ""}</div><div class="foot">${esc(t(x.f))}</div></div>`).join("");
+  $$("#kpis .kpi").forEach(el => { const fn = () => openApps(k[+el.dataset.k].go); el.onclick = fn; el.onkeydown = e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), fn()); });
+
+  const dist = (title, key, items) => {
+    const tot = A.length || 1;
+    return `<div class="card"><h2>${esc(t(title))}</h2><div class="stack">${items.map(it => `<span style="--c:${it.c};width:${it.n / tot * 100}%"></span>`).join("")}</div>
+      <div class="legend">${items.map(it => `<button type="button" data-f="${key}" data-v="${it.v}"><i style="--c:${it.c}"></i>${esc(it.l)}<b>${it.n}</b></button>`).join("")}</div></div>`;
+  };
+  const cnt = (p, v) => A.filter(a => a[p] === v).length;
+  $("#dists").innerHTML =
+    dist("dSign", "sign", ["active", "stale", "never", "recent", "unknown"].map(v => ({v, l:t("s_" + v), n:cnt("signShown", v), c:{active:"var(--pass)", stale:"var(--part)", never:"var(--fail)", recent:"var(--inv)", unknown:"var(--na)"}[v]})).filter(x => x.n || x.v !== "unknown")) +
+    dist("dOwner", "owner", ["ok", "disabled", "none"].map(v => ({v, l:t("o_" + v), n:cnt("ownerState", v), c:{ok:"var(--pass)", disabled:"var(--inv)", none:"var(--fail)"}[v]}))) +
+    dist("dCred", "cred", ["active", "cert", "expired", "none"].map(v => ({v, l:t("c_" + v), n:cnt("credState", v), c:{active:"var(--brand)", cert:"#7b4fd6", expired:"var(--na)", none:"var(--stroke-2)"}[v]})));
+  $$("#dists .legend button").forEach(b => b.onclick = () => openApps({[b.dataset.f]:b.dataset.v}));
+
+  const top = A.filter(a => a.verdict === "delete" || a.flags.includes("risk")).sort((x, y) => x.prio - y.prio).slice(0, 10);
+  $("#topTbl").innerHTML = top.length ? `<thead><tr><th>${esc(t("cName"))}</th><th>${esc(t("cLast"))}</th><th class="hide-sm">${esc(t("cOwners"))}</th><th>${esc(t("cCreds"))}</th><th>${esc(t("cVerdict"))}</th></tr></thead><tbody>${top.map(a => `<tr data-id="${a.id}"><td><div class="t">${esc(a.name)}</div><div class="id">${esc(a.appId)}</div></td><td>${signCell(a)}</td><td class="hide-sm">${ownersCell(a)}</td><td>${credCell(a)}</td><td>${vPill(a)}</td></tr>`).join("")}</tbody>` : `<tbody><tr><td class="empty-st">${esc(t("clEmpty"))}</td></tr></tbody>`;
+  $$("#topTbl tbody tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
+}
+
+function openApps(f){
+  S.f = {q:"", verdict:"", sign:"", owner:"", cred:"", flag:""};
+  Object.assign(S.f, f); S.shown = 100; syncFilterUI(); renderApps(); go("apps");
+}
+function fillSel(id, all, prefix, vals, cur){
+  $(id).innerHTML = `<option value="">${esc(t(all))}</option>` + vals.map(v => `<option value="${v}">${esc(typeof v === "string" && T.en[prefix + v] ? t(prefix + v) : v)}</option>`).join("");
+  $(id).value = cur || "";
+}
+function syncFilterUI(){
+  $("#q").value = S.f.q || "";
+  fillSel("#fVerdict", "allVerdict", "v_", ["delete", "review", "ok", "unknown"], S.f.verdict);
+  fillSel("#fSign", "allSign", "s_", ["active", "stale", "never", "recent", "unknown"], S.f.sign);
+  $("#fOwner").innerHTML = `<option value="">${esc(t("allOwner"))}</option>` + ["ok", "noactive", "none", "disabled"].map(v => `<option value="${v}">${esc(v === "noactive" ? t("kOwner") : t("o_" + v))}</option>`).join("");
+  $("#fOwner").value = S.f.owner || "";
+  $("#fCred").innerHTML = `<option value="">${esc(t("allCred"))}</option>` + ["active", "cert", "expired", "none", "soon", "risk"].map(v => `<option value="${v}">${esc(v === "soon" ? t("c_soon") : v === "risk" ? t("tRisk") : t("c_" + v))}</option>`).join("");
+  $("#fCred").value = S.f.flag === "risk" ? "risk" : (S.f.cred || "");
+}
+function filtered(){
+  const q = (S.f.q || "").toLowerCase();
+  let L = S.apps.filter(a =>
+    (!q || a.name.toLowerCase().includes(q) || (a.appId || "").toLowerCase().includes(q) || a.owners.some(o => (o.name + " " + o.upn).toLowerCase().includes(q))) &&
+    (!S.f.verdict || a.verdict === S.f.verdict) &&
+    (!S.f.sign || a.signShown === S.f.sign) &&
+    (!S.f.owner || (S.f.owner === "noactive" ? a.ownerState !== "ok" : a.ownerState === S.f.owner)) &&
+    (!S.f.cred || (S.f.cred === "soon" ? a.flags.includes("soon") : a.credState === S.f.cred)) &&
+    (!S.f.flag || a.flags.includes(S.f.flag)));
+  const {k, d} = S.sort;
+  const val = a => k === "name" ? a.name.toLowerCase() : k === "created" ? (a.created || "") : k === "last" ? (a.last || "") : k === "owners" ? a.owners.length : k === "creds" ? a.validSecrets * 10 + a.validCerts : a.prio;
+  return L.sort((x, y) => { const p = val(x), q2 = val(y); return (p < q2 ? -1 : p > q2 ? 1 : 0) * d || x.name.localeCompare(y.name); });
+}
+function renderApps(){
+  if(!S.raw) return;
+  const L = filtered();
+  const cols = [["prio", "cVerdict"], ["name", "cName"], ["last", "cLast"], ["owners", "cOwners"], ["creds", "cCreds"], ["created", "cCreated"]];
+  const head = `<thead><tr>${cols.map(([k, l]) => `<th class="${k === "created" ? "hide-sm" : ""}"><button type="button" data-k="${k}">${esc(t(l))}${S.sort.k === k ? `<span class="ar">${S.sort.d > 0 ? "▲" : "▼"}</span>` : ""}</button></th>`).join("")}</tr></thead>`;
+  const rows = L.slice(0, S.shown).map(a => `<tr data-id="${a.id}"><td>${vPill(a)}</td><td><div class="t">${esc(a.name)}</div><div class="id">${esc(a.appId)}</div><div class="meta">${flagsHtml(a)}</div></td><td>${signCell(a)}</td><td>${ownersCell(a)}</td><td>${credCell(a)}</td><td class="hide-sm muted">${esc(fmtDate(a.created))}</td></tr>`).join("");
+  $("#appTbl").innerHTML = head + `<tbody>${rows || `<tr><td colspan="6" class="empty-st">${esc(t("clEmpty"))}</td></tr>`}</tbody>`;
+  $("#count").textContent = t("showing", Math.min(S.shown, L.length), L.length);
+  const rest = L.length - S.shown;
+  $("#moreWrap").hidden = rest <= 0; $("#moreBtn").textContent = t("showMore", Math.min(rest, 200));
+  $$("#appTbl th button").forEach(b => b.onclick = () => { const k = b.dataset.k; S.sort = {k, d:S.sort.k === k ? -S.sort.d : (k === "last" || k === "created" ? 1 : 1)}; renderApps(); });
+  $$("#appTbl tbody tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
+}
+$("#moreBtn").onclick = () => { S.shown += 200; renderApps(); };
+$("#q").oninput = e => { S.f.q = e.target.value; S.shown = 100; renderApps(); };
+$("#fVerdict").onchange = e => { S.f.verdict = e.target.value; renderApps(); };
+$("#fSign").onchange = e => { S.f.sign = e.target.value; renderApps(); };
+$("#fOwner").onchange = e => { S.f.owner = e.target.value; renderApps(); };
+$("#fCred").onchange = e => { const v = e.target.value; S.f.flag = v === "risk" ? "risk" : ""; S.f.cred = v === "risk" ? "" : v; renderApps(); };
+$("#resetF").onclick = () => openApps({});
+
+/* ---------------- flyout ---------------- */
+function openFly(id){
+  const a = S.apps.find(x => x.id === id); if(!a) return;
+  $("#flyTitle").textContent = a.name; $("#flySub").textContent = a.appId;
+  const inact = S.cfg.inactive;
+  const todo = [];
+  if(a.verdict === "unknown") todo.push(["warn", t("todoUnknown")]);
+  if(a.flags.includes("risk")) todo.push(["bad", t("todoRisk")]);
+  if(a.verdict === "delete") todo.push(["bad", t("todoDelete", inact)]);
+  if(a.signShown === "recent") todo.push(["warn", t("todoRecent", inact)]);
+  if(a.verdict !== "delete"){
+    if(a.ownerState === "none") todo.push(["bad", t("todoNoOwner")]);
+    if(a.ownerState === "disabled") todo.push(["warn", t("todoDisOwner")]);
+    if(a.flags.includes("unusedCred")) todo.push(["warn", t("todoUnused")]);
+    if(a.flags.includes("soon")) todo.push(["warn", t("todoSoon")]);
+    if(a.flags.includes("long")) todo.push(["warn", t("todoLong")]);
+  }
+  if(a.flags.includes("expired")) todo.push(["warn", t("todoExpired")]);
+  if(!todo.length) todo.push(["ok", t("todoOk")]);
+
+  const acts = [["sAny", a.acts.any], ["sDelClient", a.acts.delClient], ["sDelRes", a.acts.delRes], ["sAppClient", a.acts.appClient], ["sAppRes", a.acts.appRes]];
+  const credRows = a.creds.sort((x, y) => (y.end || "").localeCompare(x.end || "")).map(c => `<tr><td>${esc(t(c.type))}</td><td>${esc(c.name || "—")}</td><td>${esc(fmtDate(c.end))}</td><td>${c.lastUsed === undefined ? "—" : esc(c.lastUsed ? agoTxt(c.lastUsed) : t("never"))}</td><td>${pill(c.status === "expired" ? "st-na" : c.status === "soon" ? "st-inv" : (a.sign === "never" || a.sign === "stale") ? "st-fail" : "st-pass", t("cr_" + c.status))}</td></tr>`).join("");
+  const portal = `https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/${encodeURIComponent(a.appId)}`;
+
+  $("#flyBody").innerHTML = `
+    <div><h3>${esc(t("flyTodo"))}</h3><ul class="todo">${todo.map(([c, s]) => `<li class="${c}"><i>${c === "ok" ? "✓" : "!"}</i><span>${esc(s)}</span></li>`).join("")}</ul></div>
+    <div><h3>${esc(t("flyFacts"))}</h3><div class="facts">
+      <div><b>${esc(t("fVerdict"))}</b>${vPill(a)}</div>
+      <div><b>${esc(t("fLastL"))}</b>${esc(a.sign === "unknown" ? "—" : agoTxt(a.last))}</div>
+      <div><b>${esc(t("fCreatedL"))}</b>${esc(fmtDate(a.created))}</div>
+      <div><b>${esc(t("fAudience"))}</b>${esc(a.audience)}</div>
+      <div><b>${esc(t("fPublisher"))}</b>${esc(a.publisher || "—")}</div>
+      <div><b>Object ID</b><span class="small" style="font-family:var(--mono)">${esc(a.id)}</span></div>
+    </div><div class="meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${flagsHtml(a)}</div></div>
+    <div><h3>${esc(t("flySign"))}</h3>${S.raw.signOk ? `<table class="mini"><tbody>${acts.map(([l, d]) => `<tr><td>${esc(t(l))}</td><td>${esc(d ? fmtDate(d) : "—")}</td><td class="muted">${d ? esc(agoTxt(d)) : ""}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">${esc(t("todoUnknown"))}</p>`}</div>
+    <div><h3>${esc(t("flyOwners"))} (${a.owners.length})</h3>${a.owners.length ? `<table class="mini"><tbody>${a.owners.map(o => `<tr><td>${esc(o.name)}${o.isSp ? ` <span class="tag">${esc(t("sp"))}</span>` : ""}${o.disabled ? ` <span class="tag warn">${esc(t("disabled"))}</span>` : ""}</td><td class="muted">${esc(o.upn)}</td></tr>`).join("")}</tbody></table>` : `<span class="tag bad">${esc(t("o_none"))}</span>`}</div>
+    <div><h3>${esc(t("flyCreds"))} (${a.creds.length})</h3>${a.creds.length ? `<div class="scroll"><table class="mini"><thead><tr><th>${esc(t("crType"))}</th><th>${esc(t("crName"))}</th><th>${esc(t("crEnd"))}</th><th>${esc(t("crUsed"))}</th><th>${esc(t("crStatus"))}</th></tr></thead><tbody>${credRows}</tbody></table></div>` : `<span class="muted">${esc(t("none"))}</span>`}</div>
+    <div class="actions-row">${S.raw.demo ? "" : `<a class="btn primary" href="${portal}" target="_blank" rel="noopener">${esc(t("flyOpen"))} ↗</a>`}<button class="btn" type="button" id="flyCopy">${esc(t("copy"))} App ID</button></div>`;
+  $("#flyCopy").onclick = () => copy(a.appId);
+  $("#scrim").classList.add("on"); $("#fly").classList.add("on"); $("#flyClose").focus();
+}
+function closeFly(){ $("#scrim").classList.remove("on"); $("#fly").classList.remove("on"); }
+$("#flyClose").onclick = closeFly; $("#scrim").onclick = closeFly;
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ closeFly(); closeModal(); } });
+
+/* ---------------- cleanup ---------------- */
+function renderCleanup(){
+  if(!S.raw) return;
+  const A = [...S.apps].sort((x, y) => x.prio - y.prio);
+  const groups = [
+    ["clA", "clASub", A.filter(a => a.flags.includes("risk")), {flag:"risk"}],
+    ["clB", "clBSub", A.filter(a => a.verdict === "delete"), {verdict:"delete"}],
+    ["clC", "clCSub", A.filter(a => a.verdict !== "delete" && a.ownerState !== "ok"), {owner:"noactive", verdict:""}],
+    ["clD", "clDSub", A.filter(a => a.expired > 0), {flag:"expired"}]
+  ];
+  $("#clCards").innerHTML = groups.map(([h, s, L], i) => `<div class="card"><h2>${esc(t(h))} · ${L.length}</h2><p class="sub">${esc(t(s))}</p>
+    ${L.length ? `<table class="mini"><tbody>${L.slice(0, 8).map(a => `<tr data-id="${a.id}" style="cursor:pointer"><td><div>${esc(a.name)}</div><div class="muted small">${esc(a.sign === "unknown" ? "" : agoTxt(a.last))}</div></td><td style="text-align:right">${credCell(a)}</td></tr>`).join("")}</tbody></table>
+    ${L.length > 8 ? `<button class="btn" type="button" style="margin-top:8px" data-g="${i}">${esc(t("clMore", L.length - 8))}</button>` : ""}` : `<p class="muted">${esc(t("clEmpty"))}</p>`}</div>`).join("");
+  $$("#clCards tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
+  $$("#clCards button[data-g]").forEach(b => b.onclick = () => openApps(groups[+b.dataset.g][3]));
+  const nDel = S.apps.filter(a => a.verdict === "delete").length;
+  const badge = $("#cleanBadge"); badge.hidden = !nDel; badge.textContent = nDel;
+}
+function csvOf(L){
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["DisplayName", "AppId", "ObjectId", "Verdict", "Flags", "SignInState", "LastSignIn", "Created", "Owners", "OwnerState", "ValidSecrets", "ValidCertificates", "ExpiredCredentials", "NextExpiry"];
+  const rows = L.map(a => [a.name, a.appId, a.id, a.verdict, a.flags.join("|"), a.sign, a.last || "", a.created || "", a.owners.map(o => o.upn || o.name).join("; "), a.ownerState, a.validSecrets, a.validCerts, a.expired,
+    a.creds.filter(c => c.status !== "expired").map(c => c.end).sort()[0] || ""]);
+  return "﻿" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
+}
+const stamp = () => new Date().toISOString().slice(0, 10);
+$("#csvBtn").onclick = () => download(`entra-apps-${stamp()}.csv`, csvOf(filtered()), "text/csv");
+$("#csvDelBtn").onclick = () => download(`entra-apps-to-delete-${stamp()}.csv`, csvOf(S.apps.filter(a => a.verdict === "delete").sort((x, y) => x.prio - y.prio)), "text/csv");
+
+function buildScript(){
+  const L = S.apps.filter(a => a.verdict === "delete").sort((x, y) => x.prio - y.prio);
+  const fr = LANG === "fr";
+  const lines = [
+    "# Entra App Cleanup - " + (fr ? "script de nettoyage" : "cleanup script") + " - " + new Date().toISOString(),
+    "# " + (fr ? `${L.length} app(s) candidates à la suppression (inactives depuis plus de ${S.cfg.inactive} jours).` : `${L.length} app(s) to delete (inactive for more than ${S.cfg.inactive} days).`),
+    "# " + (fr ? "Les lignes Remove-MgApplication sont commentées : décommentez uniquement ce que le propriétaire a validé." : "Remove-MgApplication lines are commented out: uncomment only what the owner has validated."),
+    "# " + (fr ? "Une app supprimée reste 30 jours dans la corbeille : Restore-MgDirectoryDeletedItem -DirectoryObjectId <ObjectId>" : "A deleted app stays 30 days in the recycle bin: Restore-MgDirectoryDeletedItem -DirectoryObjectId <ObjectId>"),
+    "",
+    "# " + (fr ? "Connexion avec le droit d'écriture sur les applications" : "Sign in with write access to applications"),
+    "Connect-MgGraph -Scopes 'Application.ReadWrite.All' -NoWelcome",
+    ""
+  ];
+  L.forEach(a => {
+    lines.push(`# ${a.name} | ${a.appId} | ${fr ? "dernière connexion" : "last sign-in"}: ${a.last ? a.last.slice(0, 10) : (fr ? "jamais" : "never")} | ${fr ? "propriétaires" : "owners"}: ${a.owners.map(o => o.upn || o.name).join(", ") || (fr ? "aucun" : "none")} | ${fr ? "secrets valides" : "valid secrets"}: ${a.validSecrets}, ${fr ? "certificats valides" : "valid certs"}: ${a.validCerts}`);
+    lines.push(`# Remove-MgApplication -ApplicationId '${a.id}'`);
+    lines.push("");
+  });
+  return lines.join("\r\n");
+}
+$("#scriptBtn").onclick = () => {
+  $("#modalTitle").textContent = t("scriptTitle"); $("#modalSub").textContent = t("scriptSub");
+  $("#modalText").value = buildScript(); $("#modal").classList.add("on");
+};
+function closeModal(){ $("#modal").classList.remove("on"); }
+$("#modalClose").onclick = closeModal;
+$("#modalCopy").onclick = () => copy($("#modalText").value);
+$("#modalDl").onclick = () => download(`entra-app-cleanup-${stamp()}.ps1`, $("#modalText").value);
+
+/* ---------------- demo data ---------------- */
+function demoData(){
+  let seed = 42; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const iso = d => new Date(Date.now() - d * DAY).toISOString();
+  const guid = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.floor(rnd() * 16); return (c === "x" ? r : (r & 3) | 8).toString(16); });
+  const people = [["Alex Martin", "alex.martin"], ["Camille Durand", "camille.durand"], ["Sam Patel", "sam.patel"], ["Léa Bernard", "lea.bernard"], ["Jordan Lee", "jordan.lee"], ["Nora Petit", "nora.petit"]];
+  const names = ["HR Portal", "Power BI Embedded", "SAP Connector", "Legacy Intranet", "Ticketing Webhook", "POC Chatbot", "Backup Service", "Expense App", "SharePoint Migration Tool", "Teams Bot - Helpdesk", "Jenkins CI", "Terraform Pipeline", "Old CRM Sync", "Marketing Forms", "Copilot Plugin Test", "Azure DevOps Sync", "Badge Reader API", "Payroll Export", "Graph Explorer Test", "Intune Reporting", "Datadog Integration", "ServiceNow Connector", "Mailbox Audit Script", "Test App 1", "Test App 2", "Defender Automation", "Fabric Ingestion", "Logic Apps Connector", "Survey Tool", "Partner Portal", "Webinar Platform", "Archive Reader", "MFA Report", "Sentinel Playbook", "Signature Manager", "Room Booking", "Visitor Kiosk", "Cost Dashboard", "AI Lab Sandbox", "Wiki Sync"];
+  const apps = [], signins = [], creds = [];
+  names.forEach((n, i) => {
+    const id = guid(), appId = guid(), age = 20 + Math.floor(rnd() * 1400);
+    const kind = rnd();
+    const last = kind < .15 ? null : kind < .35 ? 100 + Math.floor(rnd() * 500) : Math.floor(rnd() * 60);
+    const nOwners = rnd() < .3 ? 0 : 1 + Math.floor(rnd() * 3);
+    const owners = [...new Set(Array.from({length:nOwners}, () => pick(people)))].map(p => { return {"@odata.type":"#microsoft.graph.user", id:guid(), displayName:p[0], userPrincipalName:p[1] + "@contoso.com", accountEnabled:rnd() > .25}; });
+    const pw = Array.from({length:Math.floor(rnd() * 3)}, () => { const st = Math.floor(rnd() * 900); const len = pick([180, 365, 730, 1095]); return {keyId:guid(), displayName:pick(["prod", "dev", "pipeline", "", "temp"]), hint:"Ab" + Math.floor(rnd() * 9), startDateTime:iso(st), endDateTime:iso(st - len)}; });
+    const kc = rnd() < .2 ? [{keyId:guid(), displayName:"CN=" + n.replace(/\W/g, ""), startDateTime:iso(200), endDateTime:iso(200 - 730), usage:"Verify", type:"AsymmetricX509Cert"}] : [];
+    apps.push({id, appId, displayName:n, createdDateTime:iso(age), signInAudience:rnd() < .15 ? "AzureADMultipleOrgs" : "AzureADMyOrg", publisherDomain:"contoso.com", passwordCredentials:pw, keyCredentials:kc, owners});
+    if(last !== null){
+      const d = iso(Math.min(last, age));
+      signins.push({appId, lastSignInActivity:{lastSignInDateTime:d}, [rnd() < .5 ? "applicationAuthenticationClientSignInActivity" : "delegatedClientSignInActivity"]:{lastSignInDateTime:d}});
+      [...pw, ...kc].forEach(c => { if(rnd() < .6) creds.push({keyId:c.keyId, appId, signInActivity:{lastSignInDateTime:d}}); });
+    }
+  });
+  return {apps, signins, creds, signOk:true, credOk:true, signErr:"", credErr:"", scannedAt:new Date().toISOString(), demo:true};
+}
+$("#demoBtn").onclick = () => { readCfg(); S.raw = demoData(); evaluate(); renderAll(); go("overview"); };
+
+/* ---------------- wiring ---------------- */
+$("#signInBtn").onclick = async () => { readCfg(); const tk = SS.get("tok"); if(tk && tk.clientId === S.cfg.clientId && tk.tenant === S.cfg.tenant && await token()) scan(); else signIn(); };
+$("#reloadBtn").onclick = () => { readCfg(); scan(); };
+$("#outBtn").onclick = () => { if(S.raw?.demo && !SS.get("tok")){ S.raw = null; S.apps = []; renderAll(); go("connect"); } else signOut(); };
+$("#copyRedir").onclick = () => copy(REDIRECT);
+["#fInactive", "#fSoon"].forEach(id => $(id).onchange = () => { readCfg(); if(S.raw){ evaluate(); renderAll(); } });
+
+function renderAll(){
+  applyI18n(); renderConnect();
+  $$("nav.side a.needdata").forEach(a => a.classList.toggle("off", !S.raw));
+  if(S.raw){
+    renderOverview(); syncFilterUI(); renderApps(); renderCleanup();
+    const notes = [];
+    if(S.raw.demo) notes.push(t("demoOn"));
+    if(!S.raw.signOk) notes.push(t("errSignNA", S.raw.signErr));
+    else if(!S.raw.credOk) notes.push(t("errCredNA", S.raw.credErr));
+    if(notes.length) banner(notes.join(" "), S.raw.signOk ? "info" : "err",
+      S.raw.demo ? `<button class="btn" type="button" onclick="document.getElementById('outBtn').click()">${esc(t("demoExit"))}</button>` : "");
+    else if($("#banner").classList.contains("info")) banner("");
+  } else { $("#cleanBadge").hidden = true; }
+}
+
+(async function init(){
+  applyTheme();
+  S.f.flag = "";
+  renderAll();
+  try{
+    if(await handleRedirect()){ renderAll(); go("connect"); await scan(); return; }
+  }catch(e){ banner(t("errAuth", e.message), "err"); }
+  const h = location.hash.slice(1);
+  go(["overview", "apps", "cleanup", "connect", "about"].includes(h) ? h : "connect");
+})();
+</script>
+</body>
+</html>

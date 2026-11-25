@@ -255,6 +255,7 @@ ul.todo li small{color:var(--text-2)}
   <a href="#apps" data-v="apps" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 3h2v2H2zm4 0h8v2H6zM2 7h2v2H2zm4 0h8v2H6zm-4 4h2v2H2zm4 0h8v2H6z"/></svg><span data-i18n="navApps"></span></a>
   <a href="#sensitive" data-v="sensitive" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1 14 3.5V8c0 3.3-2.5 6-6 7-3.5-1-6-3.7-6-7V3.5zm-.75 4v4h1.5V5zm0 5v1.5h1.5V10z"/></svg><span data-i18n="navSensitive"></span><span class="badge" id="sensBadge" hidden></span></a>
   <a href="#cleanup" data-v="cleanup" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 1h4v1.5h4V4H2V2.5h4zM3 5h10l-.8 10H3.8zm3 2v6h1.2V7zm2.8 0v6H10V7z"/></svg><span data-i18n="navCleanup"></span><span class="badge" id="cleanBadge" hidden></span></a>
+  <a href="#kpi" data-v="kpi" class="needdata"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 13h12v1.5H2zM3 8h2v4H3zm4-4h2v8H7zm4 2h2v6h-2z"/></svg><span data-i18n="navKpi"></span></a>
   <div class="grp" data-i18n="grpSetup"></div>
   <a href="#connect" data-v="connect"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a3.5 3.5 0 0 1 3.5 3.5V6H13v9H3V6h1.5V4.5A3.5 3.5 0 0 1 8 1zm0 1.5a2 2 0 0 0-2 2V6h4V4.5a2 2 0 0 0-2-2zM7.25 9v3h1.5V9z"/></svg><span data-i18n="navConnect"></span></a>
   <a href="#about" data-v="about"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3h1.5v1.5h-1.5zm0 3h1.5v5h-1.5z"/></svg><span data-i18n="navAbout"></span></a>
@@ -353,6 +354,24 @@ ul.todo li small{color:var(--text-2)}
     <p class="sub" data-i18n="clScriptSub"></p>
     <div class="actions-row"><button class="btn primary" type="button" id="scriptBtn" data-i18n="clScriptBtn"></button><button class="btn" type="button" id="csvDelBtn" data-i18n="clCsvBtn"></button></div>
   </div>
+</section>
+
+<!-- KPI TRACKING -->
+<section class="view" id="v-kpi">
+  <div class="ph-row"><div class="ph"><h1 data-i18n="navKpi"></h1><p data-i18n="kpIntro"></p></div>
+    <div class="actions-row"><button class="btn primary" type="button" data-deck="1" data-i18n="deckBtn"></button></div></div>
+  <div class="grid halves" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+    <div class="card">
+      <h2 data-i18n="kpSave"></h2><p class="sub" data-i18n="kpSaveSub"></p>
+      <div class="actions-row"><button class="btn primary" type="button" id="snapBtn" data-i18n="kpSaveBtn"></button><button class="btn" type="button" id="kpiCsvBtn" data-i18n="kpCsvBtn"></button></div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="kpBase"></h2><p class="sub" id="kpBaseSub"></p>
+      <div class="actions-row"><label class="btn" for="baseFile" data-i18n="kpLoad"></label><input type="file" id="baseFile" accept=".json,application/json" hidden><select class="sel" id="histSel" aria-label="History"></select><button class="btn" type="button" id="baseClear" data-i18n="kpClear"></button></div>
+    </div>
+  </div>
+  <div class="card"><h2 data-i18n="kpCmp"></h2><p class="sub" id="kpCmpSub"></p><div class="scroll"><table class="tbl" id="kpTbl"></table></div></div>
+  <div class="grid halves" id="kpLists" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
 </section>
 
 <!-- ABOUT -->
@@ -478,7 +497,7 @@ en:{
   r_delete:"No sign-in for more than {0} days and created over {0} days ago: confirm with the owner, then delete the app. A deleted app stays restorable for 30 days.",
   r_reducePerms:"Reduce application permissions: {0}.",
   r_caWid:"Restrict where the app can sign in from: Conditional Access for workload identities, block outside known IPs (report-only first).",
-  r_caWidIps:"Restrict where the app can sign in from: {0} IP(s) seen in 30 days, a named location and a blocking policy are ready (report-only first).",
+  r_caWidIps:"Restrict where the app can sign in from: {0} IP(s) seen in 30 days, a named location and a blocking policy are ready (report-only first). Read the warnings before applying.",
   r_certInstead:"Replace the client secret with a certificate, a federated credential or a managed identity.",
   r_assignReq:"Turn on \"Assignment required\" on the enterprise app and assign a group: today any user of the tenant can sign in to it.",
   r_caUser:"Delegated permissions are fine: the app only acts within the signed-in user's rights. Target it in a user Conditional Access policy (MFA, compliant device) and keep the consent limited.",
@@ -508,6 +527,30 @@ en:{
   dTitle:"App registration review", dSyn:"Where we stand", dSynSub:"{0} app registrations · inactive after {1} days", dPlan:"Action plan", dPlanSub:"Recommendations grouped by action, most critical first", dApps:"Apps by criticality", dAppsSub:"{0} apps with something to do · page {1}/{2}", dCard:"Critical app", dWid:"Conditional Access for workload identities", dWidSub:"Named locations from 30 days of sign-in logs · policies in report-only", dWidNone:"No IP analysis yet: run \"Analyze IPs of app-only apps\" before exporting.", dMethod:"Method and limits",
   dApps_n:"Apps", dExamples:"Examples", dBySev:"Apps by criticality", dByTier:"Apps by sensitivity", dGen:"Generated by Entra App Cleanup", dRanges:"Ranges", dPolicy:"Policy",
   dMethodItems:["Delete: no sign-in of any kind beyond the threshold, app older than the threshold.","Sensitivity: highest level among granted permissions (application permissions weigh one level more than delegated).","Criticality: most severe recommendation for the app.","IPs: service principal sign-ins of the last 30 days; an app running on dynamic cloud IPs needs a fixed egress first.","Always confirm with the owner before deleting: activity is kept for a limited time."],
+  navKpi:"KPI tracking",
+  kpIntro:"Save the current state before cleaning up, then compare after. Every scan is also kept in this browser's history (last 8, per tenant).",
+  kpSave:"Current state", kpSaveSub:"Download a snapshot (JSON) of the KPIs and of each app's state. Keep it with your project files: it is your baseline.", kpSaveBtn:"Save a snapshot (JSON)", kpCsvBtn:"Export KPIs (CSV)",
+  kpBase:"Baseline", kpLoad:"Load a snapshot…", kpClear:"Clear", kpHist:"History in this browser…", kpNoBase:"No baseline: load a snapshot or pick one from the history.", kpBaseIs:"Baseline taken on {0} ({1} apps, inactive after {2} days).",
+  kpBadFile:"This file is not an Entra App Cleanup snapshot.", kpOtherTenant:"Warning: this snapshot comes from another tenant ({0}).", kpLoaded:"Baseline loaded", kpDemoBase:"Demo: a fictitious baseline taken 60 days ago is loaded.",
+  kpCmp:"Comparison", kpCmpNone:"Current state only. Load a baseline to see the progress.", kpCmpSub:"{0} → {1}",
+  kpKpi:"KPI", kpBaseCol:"Baseline", kpNowCol:"Now", kpDelta:"Change",
+  kpGone:"Removed since the baseline", kpNew:"New since the baseline", kpBetter:"Criticality lowered", kpWorse:"Criticality raised", kpEmpty:"None.",
+  k_total:"App registrations", k_sens:"Sensitive apps (critical or high)", k_crit:"Apps with a critical recommendation", k_risk:"Unused apps with a valid secret", k_del:"Candidates to delete",
+  k_noOwner:"Apps without an active owner", k_unres:"Apps without user restriction", k_appHigh:"Apps with high or critical application permissions", k_secrets:"Valid secrets", k_certs:"Valid certificates", k_expired:"Expired credentials", k_long:"Secrets valid over 2 years",
+  dProg:"Progress since the baseline", dProgSub:"Baseline {0} → now {1}", dProgGone:"{0} app(s) removed, {1} new, {2} with lower criticality.",
+  stOrg:"Tenant name and logo", wTitle:"Warnings before applying", ipFailed:"failed only, left out",
+  w_lic:"Workload Identities Premium licences are required to create or modify a Conditional Access policy scoped to service principals.",
+  w_scope:"Only single-tenant service principals registered in your tenant are covered: not multi-tenant apps, Microsoft or third-party SaaS apps, nor managed identities.",
+  w_target:"The policy must target the service principal Object ID (Enterprise apps), not the app registration Object ID, and be assigned directly: a group containing the service principal is not enforced.",
+  w_window:"Based on 30 days of logs only: a monthly or quarterly job may come from other IPs. Keep the policy in report-only for at least a full business cycle and check the Report-only tab of the sign-in logs.",
+  w_dynamic:"If the app runs on services with changing IPs (Azure Functions, Logic Apps, GitHub or DevOps runners, SaaS), the policy will block it. Give it a fixed egress first, or prefer a managed identity.",
+  w_tokens:"Only new token requests are blocked: tokens already issued stay valid until they expire (about one hour).",
+  w_multi:"This app is multi-tenant: Conditional Access for workload identities does not cover it, a policy would have no effect. No policy is proposed.",
+  w_failed:"{0} IP address(es) only had failed sign-ins and were left out of the allowed list: check whether these are attack attempts.",
+  w_few:"Only {0} sign-in(s) in 30 days: too few to be sure the list of IPs is complete.",
+  w_trunc:"Only the first 5,000 events were read: some IPs may be missing.",
+  w_grouped:"Some addresses were widened to a /24 or /64 range: check that the whole range belongs to you.",
+  dWarn:"Before you enable these policies", dWarnSub:"General warnings, then the warnings specific to each app", dWarnGen:"For every app", dWarnApp:"Specific to each app", dWarnNone:"No app-specific warning.",
   aboutHtml:`<h2>Why</h2><p>App registrations pile up: proofs of concept, old integrations, apps of people who left. Each one that still holds a valid secret is a way into the tenant that nobody watches, and the most dangerous are those with strong application permissions. This page lists them, shows whether they are used, who owns them, what they can do, whether any user can sign in to them, then proposes recommendations ranked by criticality.</p>
 <h2>How it is computed</h2><ul>
 <li><b>Verdict</b>: <i>Delete</i> when no sign-in of any kind (delegated or app-only, as client or as resource) beyond the threshold and the app is older than the threshold. <i>Review</i> when used but with something to fix. <i>Keep</i> otherwise.</li>
@@ -588,7 +631,7 @@ fr:{
   r_delete:"Aucune connexion depuis plus de {0} jours et créée il y a plus de {0} jours : confirmez avec le propriétaire, puis supprimez l'app. Une app supprimée reste restaurable 30 jours.",
   r_reducePerms:"Réduisez les permissions d'application : {0}.",
   r_caWid:"Limitez d'où l'app peut se connecter : accès conditionnel pour identités de charge de travail, blocage hors des IP connues (d'abord en rapport seul).",
-  r_caWidIps:"Limitez d'où l'app peut se connecter : {0} IP vues sur 30 jours, l'emplacement nommé et la stratégie de blocage sont prêts (d'abord en rapport seul).",
+  r_caWidIps:"Limitez d'où l'app peut se connecter : {0} IP vues sur 30 jours, l'emplacement nommé et la stratégie de blocage sont prêts (d'abord en rapport seul). Lisez les avertissements avant d'appliquer.",
   r_certInstead:"Remplacez le secret client par un certificat, un identifiant fédéré ou une identité managée.",
   r_assignReq:"Activez « Affectation requise » sur l'application d'entreprise et affectez un groupe : aujourd'hui, tout utilisateur du tenant peut s'y connecter.",
   r_caUser:"Les permissions déléguées sont acceptables : l'app n'agit que dans les droits de l'utilisateur connecté. Ciblez-la dans une stratégie d'accès conditionnel utilisateurs (MFA, appareil conforme) et gardez le consentement limité.",
@@ -618,6 +661,30 @@ fr:{
   dTitle:"Revue des app registrations", dSyn:"Où on en est", dSynSub:"{0} app registrations · inactive après {1} jours", dPlan:"Plan d'action", dPlanSub:"Recommandations regroupées par action, les plus critiques d'abord", dApps:"Apps par criticité", dAppsSub:"{0} apps avec une action · page {1}/{2}", dCard:"App critique", dWid:"Accès conditionnel pour identités de charge de travail", dWidSub:"Emplacements nommés issus de 30 jours de journaux · stratégies en rapport seul", dWidNone:"Pas encore d'analyse IP : lancez « Analyser les IP des apps app seule » avant d'exporter.", dMethod:"Méthode et limites",
   dApps_n:"Apps", dExamples:"Exemples", dBySev:"Apps par criticité", dByTier:"Apps par sensibilité", dGen:"Généré par Entra App Cleanup", dRanges:"Plages", dPolicy:"Stratégie",
   dMethodItems:["Supprimer : aucune connexion d'aucun type au-delà du seuil, app plus ancienne que le seuil.","Sensibilité : niveau le plus élevé parmi les permissions accordées (une permission d'application pèse un niveau de plus qu'une déléguée).","Criticité : recommandation la plus grave pour l'app.","IP : connexions du principal de service sur 30 jours ; une app hébergée sur des IP cloud dynamiques demande d'abord une sortie fixe.","Toujours confirmer avec le propriétaire avant de supprimer : l'activité n'est conservée que sur une durée limitée."],
+  navKpi:"Suivi des KPI",
+  kpIntro:"Enregistrez l'état actuel avant de nettoyer, puis comparez après. Chaque analyse est aussi gardée dans l'historique de ce navigateur (8 dernières, par tenant).",
+  kpSave:"État actuel", kpSaveSub:"Téléchargez une photo (JSON) des KPI et de l'état de chaque app. Gardez-la avec les documents du projet : c'est votre référence.", kpSaveBtn:"Enregistrer une photo (JSON)", kpCsvBtn:"Exporter les KPI (CSV)",
+  kpBase:"Référence", kpLoad:"Charger une photo…", kpClear:"Effacer", kpHist:"Historique de ce navigateur…", kpNoBase:"Pas de référence : chargez une photo ou choisissez-en une dans l'historique.", kpBaseIs:"Référence prise le {0} ({1} apps, inactive après {2} jours).",
+  kpBadFile:"Ce fichier n'est pas une photo Entra App Cleanup.", kpOtherTenant:"Attention : cette photo vient d'un autre tenant ({0}).", kpLoaded:"Référence chargée", kpDemoBase:"Démo : une référence fictive prise il y a 60 jours est chargée.",
+  kpCmp:"Comparaison", kpCmpNone:"État actuel seul. Chargez une référence pour voir la progression.", kpCmpSub:"{0} → {1}",
+  kpKpi:"KPI", kpBaseCol:"Référence", kpNowCol:"Maintenant", kpDelta:"Évolution",
+  kpGone:"Supprimées depuis la référence", kpNew:"Nouvelles depuis la référence", kpBetter:"Criticité en baisse", kpWorse:"Criticité en hausse", kpEmpty:"Aucune.",
+  k_total:"App registrations", k_sens:"Apps sensibles (critiques ou élevées)", k_crit:"Apps avec une recommandation critique", k_risk:"Apps inutilisées avec un secret valide", k_del:"Candidates à la suppression",
+  k_noOwner:"Apps sans propriétaire actif", k_unres:"Apps sans restriction utilisateurs", k_appHigh:"Apps avec des permissions d'application élevées ou critiques", k_secrets:"Secrets valides", k_certs:"Certificats valides", k_expired:"Identifiants expirés", k_long:"Secrets valides plus de 2 ans",
+  dProg:"Progression depuis la référence", dProgSub:"Référence {0} → maintenant {1}", dProgGone:"{0} app(s) supprimée(s), {1} nouvelle(s), {2} en baisse de criticité.",
+  stOrg:"Nom et logo du tenant", wTitle:"Avertissements avant d'appliquer", ipFailed:"échecs uniquement, écartée",
+  w_lic:"Des licences Workload Identities Premium sont nécessaires pour créer ou modifier une stratégie d'accès conditionnel ciblant des principaux de service.",
+  w_scope:"Seuls les principaux de service mono-tenant inscrits dans votre tenant sont couverts : ni les apps multi-tenant, ni les apps SaaS Microsoft ou tierces, ni les identités managées.",
+  w_target:"La stratégie doit cibler l'Object ID du principal de service (Applications d'entreprise), pas celui de l'app registration, et lui être affectée directement : un groupe contenant le principal de service n'est pas appliqué.",
+  w_window:"Basé sur 30 jours de journaux seulement : un traitement mensuel ou trimestriel peut venir d'autres IP. Gardez la stratégie en rapport seul au moins un cycle métier complet et vérifiez l'onglet Rapport seul des journaux de connexion.",
+  w_dynamic:"Si l'app tourne sur des services aux IP changeantes (Azure Functions, Logic Apps, runners GitHub ou DevOps, SaaS), la stratégie la bloquera. Donnez-lui d'abord une sortie fixe, ou préférez une identité managée.",
+  w_tokens:"Seules les nouvelles demandes de jeton sont bloquées : les jetons déjà émis restent valides jusqu'à expiration (environ une heure).",
+  w_multi:"Cette app est multi-tenant : l'accès conditionnel pour identités de charge de travail ne la couvre pas, une stratégie n'aurait aucun effet. Aucune stratégie n'est proposée.",
+  w_failed:"{0} adresse(s) IP n'ont eu que des connexions en échec et ont été écartées de la liste autorisée : vérifiez s'il s'agit de tentatives d'attaque.",
+  w_few:"Seulement {0} connexion(s) en 30 jours : trop peu pour être sûr que la liste des IP est complète.",
+  w_trunc:"Seuls les 5 000 premiers événements ont été lus : des IP peuvent manquer.",
+  w_grouped:"Certaines adresses ont été élargies à une plage /24 ou /64 : vérifiez que toute la plage vous appartient.",
+  dWarn:"Avant d'activer ces stratégies", dWarnSub:"Avertissements généraux, puis ceux propres à chaque app", dWarnGen:"Pour toutes les apps", dWarnApp:"Propres à chaque app", dWarnNone:"Aucun avertissement propre à une app.",
   aboutHtml:`<h2>Pourquoi</h2><p>Les app registrations s'accumulent : POC, anciennes intégrations, apps de personnes parties. Chacune qui garde un secret valide est une porte d'entrée que personne ne surveille, et les plus dangereuses sont celles qui ont de fortes permissions d'application. Cette page les liste, montre si elles servent, à qui elles appartiennent, ce qu'elles peuvent faire, si n'importe quel utilisateur peut s'y connecter, puis propose des recommandations classées par criticité.</p>
 <h2>Comment c'est calculé</h2><ul>
 <li><b>Verdict</b> : <i>Supprimer</i> quand aucune connexion d'aucun type (déléguée ou app seule, en client ou en ressource) au-delà du seuil et que l'app est plus ancienne que le seuil. <i>À revoir</i> quand elle sert mais a quelque chose à corriger. <i>À garder</i> sinon.</li>
@@ -785,6 +852,17 @@ async function g(url){
   }
   throw new Error("throttled");
 }
+/* image stream (tenant branding logo) -> data URL + size; null when there is no logo */
+async function gImage(url){
+  const at = await token(); if(!at){ const e = new Error("expired"); e.expired = true; throw e; }
+  const r = await fetch(GRAPH + url, {headers:{Authorization:"Bearer " + at, "Accept-Language":"0"}});
+  if(!r.ok) return null;
+  let b = await r.blob(); if(!b.size) return null;
+  if(!/^image\//.test(b.type)) b = new Blob([b], {type:"image/png"});
+  const data = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(b); });
+  const dim = await new Promise(res => { const im = new Image(); im.onload = () => res({w:im.naturalWidth, h:im.naturalHeight}); im.onerror = () => res(null); im.src = data; });
+  return dim && dim.w ? {data, ...dim} : null;
+}
 async function gAll(url, onPage, maxPages = Infinity){
   let out = [], pages = 0;
   while(url && pages < maxPages){ const j = await g(url); out = out.concat(j.value || []); pages++; onPage && onPage(out.length); url = j["@odata.nextLink"]; }
@@ -806,8 +884,8 @@ function prog(id, state, count = ""){
 async function scan(){
   banner("");
   $("#signInBtn").disabled = $("#reloadBtn").disabled = true;
-  progressUI(["Apps", "Sign", "Cred", "Perm", "Grant"]);
-  const raw = {apps:[], signins:[], creds:[], sps:[], resources:[], assignments:[], grants:[], ips:{},
+  progressUI(["Apps", "Org", "Sign", "Cred", "Perm", "Grant"]);
+  const raw = {org:null, orgOk:false, orgErr:"", apps:[], signins:[], creds:[], sps:[], resources:[], assignments:[], grants:[], ips:{},
     signOk:false, credOk:false, permOk:false, grantOk:false, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:false};
   const soft = async (id, okKey, errKey, fn) => {
     prog(id, "run");
@@ -821,6 +899,16 @@ async function scan(){
     try{ raw.apps = await gAll(base + "owners($select=id,displayName,userPrincipalName,accountEnabled)", n => prog("Apps", "run", n)); }
     catch(e){ if(e.expired) throw e; raw.apps = await gAll(base + "owners", n => prog("Apps", "run", n)); }
     prog("Apps", "done", raw.apps.length);
+
+    await soft("Org", "orgOk", "orgErr", async () => {
+      const o = (await g("/v1.0/organization?$select=id,displayName,verifiedDomains")).value[0];
+      raw.org = {id:o.id, name:o.displayName, domain:(o.verifiedDomains || []).find(d => d.isDefault)?.name || ""};
+      for(const kind of ["bannerLogo", "squareLogo"]){
+        try{ const lg = await gImage(`/v1.0/organization/${o.id}/branding/localizations/0/${kind}`); if(lg){ raw.org.logo = lg; break; } }
+        catch(e){ if(e.expired) throw e; }
+      }
+      return raw.org.name + (raw.org.logo ? " · logo" : "");
+    });
 
     await soft("Sign", "signOk", "signErr", async () => { raw.signins = await gAll("/beta/reports/servicePrincipalSignInActivities", n => prog("Sign", "run", n)); return raw.signins.length; });
     await soft("Cred", "credOk", "credErr", async () => { raw.creds = await gAll("/beta/reports/appCredentialSignInActivities", n => prog("Cred", "run", n)); return raw.creds.length; });
@@ -849,7 +937,7 @@ async function scan(){
       return raw.grants.length;
     });
 
-    S.raw = raw; evaluate(); renderAll(); go("overview");
+    S.raw = raw; evaluate(); loadBase(); histPush(snapshot()); renderAll(); go("overview");
   }catch(e){
     if(e.expired){ banner(t("errExpired"), "err"); SS.del("tok"); renderAll(); }
     else banner(t("errGraph", e.message), "err");
@@ -883,19 +971,34 @@ async function fetchIps(a){
   const m = new Map();
   ev.forEach(e => {
     const ip = e.ipAddress; if(!ip) return;
-    const x = m.get(ip) || {ip, count:0, last:null, where:new Set(), fail:0};
+    const x = m.get(ip) || {ip, count:0, ok:0, last:null, where:new Set(), fail:0};
     x.count++; if(!x.last || e.createdDateTime > x.last) x.last = e.createdDateTime;
     const loc = [e.location?.city, e.location?.countryOrRegion].filter(Boolean).join(", "); if(loc) x.where.add(loc);
-    if(e.status?.errorCode) x.fail++;
+    if(e.status?.errorCode) x.fail++; else x.ok++;
     m.set(ip, x);
   });
   const ips = [...m.values()].map(x => ({...x, where:[...x.where].join(" · ")})).sort((p, q) => q.count - p.count);
-  return {at:new Date().toISOString(), events:ev.length, truncated:ev.truncated, ips, ranges:toRanges(ips)};
+  return {at:new Date().toISOString(), events:ev.length, truncated:ev.truncated, ips, ranges:toRanges(ips.filter(x => x.ok > 0))};
 }
 async function analyzeIps(a){
   try{ S.raw.ips[a.appId] = await fetchIps(a); }
   catch(e){ if(e.expired){ banner(t("errExpired"), "err"); throw e; } S.raw.ips[a.appId] = {err:e.message, at:new Date().toISOString(), ips:[], ranges:[]}; }
 }
+/* warnings shown before any Conditional Access proposal: app-specific first, then general ones */
+const W_GEN = ["w_window", "w_dynamic", "w_lic", "w_scope", "w_target", "w_tokens"];
+function caWarnings(a, withGeneral = true){
+  const W = [], ip = a.ipInfo && !a.ipInfo.err ? a.ipInfo : null;
+  if(a.flags.includes("multi")) W.push({k:"w_multi", lv:4});
+  if(ip){
+    const fo = ip.ips.filter(x => !x.ok).length; if(fo) W.push({k:"w_failed", lv:3, p:[fo]});
+    if(ip.events && ip.events < 20) W.push({k:"w_few", lv:3, p:[ip.events]});
+    if(ip.truncated) W.push({k:"w_trunc", lv:2});
+    if(ip.ranges.some(r => /\/(24|64)$/.test(r.cidr))) W.push({k:"w_grouped", lv:2});
+  }
+  if(withGeneral) W_GEN.forEach(k => W.push({k, lv:k === "w_window" || k === "w_dynamic" ? 3 : 2, gen:true}));
+  return W.map(w => ({...w, txt:t(w.k, ...(w.p || []))}));
+}
+const caReady = a => a.appOnly && a.spId && !a.flags.includes("multi") && a.ipInfo && !a.ipInfo.err && a.ipInfo.ranges.length > 0;
 const caNames = a => ({loc:`WID - ${a.name} - known IPs`, pol:`WID - ${a.name} - block outside known IPs`});
 function caObjects(a){
   const ip = a.ipInfo; const n = caNames(a);
@@ -917,9 +1020,11 @@ function caScript(list){
     "# " + (fr ? "Connexion à Graph avec le droit de créer emplacements nommés et stratégies d'accès conditionnel" : "Sign in to Graph with the right to create named locations and Conditional Access policies"),
     "Connect-MgGraph -Scopes 'Policy.ReadWrite.ConditionalAccess','Policy.Read.All' -NoWelcome",
     ""];
-  list.forEach(a => {
+  list.filter(caReady).forEach(a => {
     const {loc, pol} = caObjects(a);
     L.push(`# ---- ${a.name} | appId ${a.appId} | SP ${a.spId} | ${a.ipInfo.ips.length} IP, ${a.ipInfo.events} sign-ins / 30 d ----`);
+    L.push("# " + t("wTitle").toUpperCase() + " :");
+    caWarnings(a).forEach(w => L.push("#   ! " + w.txt));
     L.push("# " + (fr ? "1. Crée l'emplacement nommé avec les plages IP observées, et garde son id dans $loc" : "1. Create the named location with the observed IP ranges and keep its id in $loc"));
     L.push("$loc = Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/identity/conditionalAccess/namedLocations' -ContentType 'application/json' -Body @'");
     L.push(JSON.stringify(loc, null, 2)); L.push("'@");
@@ -1062,7 +1167,8 @@ function recommend(a, inact){
       add("reducePerms", strong.some(p => p.level === 4) ? 4 : 3, lst);
     }
     if(a.appOnly){
-      if(a.ipInfo && !a.ipInfo.err && a.ipInfo.ips.length) add("caWidIps", hi ? 3 : 2, a.ipInfo.ips.length);
+      if(a.flags.includes("multi")){}
+      else if(a.ipInfo && !a.ipInfo.err && a.ipInfo.ranges.length) add("caWidIps", hi ? 3 : 2, a.ipInfo.ips.filter(x => x.ok > 0).length);
       else add("caWid", hi ? 3 : 2);
       if(a.validSecrets) add("certInstead", hi ? 3 : 2);
     }
@@ -1120,7 +1226,7 @@ const ipCell = a => !a.appOnly ? `<span class="muted">—</span>` : !a.ipInfo ? 
 
 /* ---------------- navigation ---------------- */
 function go(v){
-  if(!S.raw && ["overview", "apps", "sensitive", "cleanup"].includes(v)) v = "connect";
+  if(!S.raw && ["overview", "apps", "sensitive", "cleanup", "kpi"].includes(v)) v = "connect";
   S.view = v;
   $$(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
   $$("nav.side a").forEach(a => { if(a.dataset.v === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
@@ -1138,7 +1244,7 @@ function renderConnect(){
   $("#reloadBtn").hidden = !tk;
   $("#outBtn").hidden = !tk && !S.raw?.demo;
   $("#outBtn").textContent = S.raw?.demo && !tk ? t("demoExit") : t("signOut");
-  $("#tenantLbl").textContent = S.raw?.demo ? "contoso.onmicrosoft.com (demo)" : tk ? `${tk.user} · ${tk.tenant}` : "";
+  $("#tenantLbl").textContent = S.raw?.demo ? "Contoso (demo)" : tk ? `${tk.user} · ${S.raw?.org?.name || tk.tenant}` : "";
 }
 function readCfg(){
   S.cfg = {tenant:$("#fTenant").value.trim(), clientId:$("#fClient").value.trim(),
@@ -1265,7 +1371,7 @@ $("#ipAllBtn").onclick = async () => {
   finally{ btn.disabled = false; evaluate(); renderAll(); }
 };
 $("#caAllBtn").onclick = () => {
-  const L = S.apps.filter(a => a.appOnly && a.ipInfo && !a.ipInfo.err && a.ipInfo.ranges.length).sort((x, y) => y.tier - x.tier);
+  const L = S.apps.filter(caReady).sort((x, y) => y.tier - x.tier);
   if(!L.length){ toast(t("caNone")); return; }
   showModal(t("caTitle"), t("caSub"), caScript(L), `entra-wid-conditional-access-${stamp()}.ps1`);
 };
@@ -1280,14 +1386,15 @@ function openFly(id){
   const permRows = a.perms.map(p => `<tr class="${p.granted || !S.raw.permOk ? "" : "muted"}"><td>${esc(p.kind === "app" ? t("pApp") : t("pDel"))}</td><td>${esc(p.res)}</td><td><b>${esc(p.value)}</b>${p.kind === "app" && altOf(p.value) && p.level >= 3 ? `<div class="muted small">→ ${esc(t(altOf(p.value)))}</div>` : ""}</td><td>${lvPill(p.level)}</td><td class="small">${!p.granted && S.raw.permOk ? esc(t("pRequested")) : p.consent === "admin" ? esc(t("pAdmin")) : p.consent === "user" ? esc(t("pUsers", p.users)) : ""}</td></tr>`).join("");
   const portal = `https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/${encodeURIComponent(a.appId)}`;
   const ip = a.ipInfo;
-  const widHtml = !a.appOnly || !a.spId ? "" : `<div><h3>${esc(t("flyWid"))}</h3><div class="wid">
+  const warnHtml = `<div><b>${esc(t("wTitle"))}</b><ul class="todo" style="margin-top:6px">${caWarnings(a).map(w => `<li>${sevPill(w.lv)}<span>${esc(w.txt)}</span></li>`).join("")}</ul></div>`;
+  const widHtml = !a.appOnly || !a.spId ? "" : `<div><h3>${esc(t("flyWid"))}</h3><div class="wid">${warnHtml}
       ${!ip ? `<div class="actions-row"><button class="btn primary" type="button" id="ipOne">${esc(t("ipBtn"))}</button><span class="statusline" id="ipOneSt"></span></div>`
       : ip.err ? `<div>${esc(t("ipErr", ip.err))}</div><div><button class="btn" type="button" id="ipOne">${esc(t("ipBtn"))}</button></div>`
       : !ip.ips.length ? `<div>${esc(t("ipNone"))}</div>`
       : `<div>${esc(t("ipHead", ip.events, ip.ips.length, ip.truncated ? t("ipTrunc") : ""))}</div>
-        <div class="scroll"><table class="mini"><thead><tr><th>${esc(t("ipIp"))}</th><th>${esc(t("ipCount"))}</th><th>${esc(t("ipLast"))}</th><th>${esc(t("ipWhere"))}</th></tr></thead><tbody>${ip.ips.slice(0, 25).map(x => `<tr><td style="font-family:var(--mono)">${esc(x.ip)}</td><td>${x.count}</td><td>${esc(agoTxt(x.last))}</td><td class="muted">${esc(x.where)}</td></tr>`).join("")}</tbody></table></div>
+        <div class="scroll"><table class="mini"><thead><tr><th>${esc(t("ipIp"))}</th><th>${esc(t("ipCount"))}</th><th>${esc(t("ipLast"))}</th><th>${esc(t("ipWhere"))}</th></tr></thead><tbody>${ip.ips.slice(0, 25).map(x => `<tr><td style="font-family:var(--mono)">${esc(x.ip)}${x.ok === 0 ? ` <span class="tag bad">${esc(t("ipFailed"))}</span>` : ""}</td><td>${x.count}</td><td>${esc(agoTxt(x.last))}</td><td class="muted">${esc(x.where)}</td></tr>`).join("")}</tbody></table></div>
         <div><b>${esc(t("ipRanges"))}</b> : <span style="font-family:var(--mono)">${esc(ip.ranges.map(r => r.cidr).join(", "))}</span></div>
-        <div class="actions-row"><button class="btn primary" type="button" id="caOne">${esc(t("caBtn"))}</button><button class="btn" type="button" id="ipOne">${esc(t("reload"))}</button></div>`}
+        <div class="actions-row">${caReady(a) ? `<button class="btn primary" type="button" id="caOne">${esc(t("caBtn"))}</button>` : ""}<button class="btn" type="button" id="ipOne">${esc(t("reload"))}</button></div>`}
     </div></div>`;
 
   $("#flyBody").innerHTML = `
@@ -1368,7 +1475,7 @@ function csvOf(L){
   const pl = (a, kind) => a.perms.filter(p => p.kind === kind && (p.granted || !S.raw.permOk)).map(p => `${p.res}: ${p.value} [${LVN[p.level].toUpperCase()}]${kind === "del" && p.consent ? " (" + (p.consent === "admin" ? "admin" : p.users + " users") + ")" : ""}`).join(", ");
   const head = ["DisplayName", "AppId", "ObjectId", "ServicePrincipalId", "Criticality", "Sensitivity", "Verdict", "Type", "ApplicationPermissions", "DelegatedPermissions", "RequestedNotGranted",
     "AssignmentRequired", "UnrestrictedUsers", "SignInState", "LastSignIn", "LastDelegatedSignIn", "LastAppOnlySignIn", "Created", "Audience", "Owners", "OwnerState",
-    "ValidSecrets", "ValidCertificates", "ExpiredCredentials", "NextExpiry", "CredentialsDetail", "KnownIPs", "ProposedRanges", "Flags", "Recommendations"];
+    "ValidSecrets", "ValidCertificates", "ExpiredCredentials", "NextExpiry", "CredentialsDetail", "KnownIPs", "ProposedRanges", "CAWarnings", "Flags", "Recommendations"];
   const rows = L.map(a => [a.name, a.appId, a.id, a.spId, SEVN[a.risk], LVN[a.tier], a.verdict, a.kind, pl(a, "app"), pl(a, "del"),
     S.raw.permOk ? a.perms.filter(p => !p.granted).map(p => `${p.res}: ${p.value}`).join(", ") : "",
     a.asgReq === null ? "" : a.asgReq, a.unrestricted, a.sign, a.last || "", maxOf(a.acts.delClient, a.acts.delRes), maxOf(a.acts.appClient, a.acts.appRes), a.created || "", a.audience,
@@ -1376,6 +1483,7 @@ function csvOf(L){
     a.validSecrets, a.validCerts, a.expired, a.creds.filter(c => c.status !== "expired").map(c => c.end).sort()[0] || "",
     a.creds.map(c => `${c.type}:${c.name || "-"}:${(c.end || "").slice(0, 10)}:${c.status}${c.lastUsed !== undefined ? ":used " + (c.lastUsed ? c.lastUsed.slice(0, 10) : "never") : ""}`).join("; "),
     a.ipInfo && !a.ipInfo.err ? a.ipInfo.ips.map(x => x.ip).join(" ") : "", a.ipInfo && !a.ipInfo.err ? a.ipInfo.ranges.map(r => r.cidr).join(" ") : "",
+    a.appOnly ? caWarnings(a, false).map(w => w.txt).join(" | ") : "",
     a.flags.join("|"), a.recs.map(r => `[${SEVN[r.sev].toUpperCase()}] ${r.txt}`).join(" | ")]);
   return "﻿" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
 }
@@ -1383,20 +1491,98 @@ const maxOf = (...d) => d.filter(Boolean).sort().pop() || "";
 $("#csvBtn").onclick = () => download(`entra-apps-${stamp()}.csv`, csvOf(filtered()), "text/csv");
 $$("[data-csvall]").forEach(b => b.onclick = () => download(`entra-apps-full-${stamp()}.csv`, csvOf(byRisk(S.apps)), "text/csv"));
 
+
+/* ---------------- KPI tracking: snapshots, baseline, comparison ---------------- */
+const KPIS = ["total", "sens", "crit", "risk", "del", "noOwner", "unres", "appHigh", "secrets", "expired", "long", "certs"];
+const minApp = a => ({appId:a.appId, name:a.name, tier:a.tier, risk:a.risk, verdict:a.verdict, ownerState:a.ownerState, unrestricted:a.unrestricted,
+  appMax:a.appPerms.reduce((m, p) => Math.max(m, p.level), 0), validSecrets:a.validSecrets, validCerts:a.validCerts, expired:a.expired,
+  long:a.creds.filter(c => c.long && c.status !== "expired").length, flags:a.flags});
+function kpisOf(L){
+  const n = f => L.filter(f).length, sum = k => L.reduce((m, a) => m + (a[k] || 0), 0);
+  return {total:L.length, sens:n(a => a.tier >= 3), crit:n(a => a.risk >= 4), risk:n(a => (a.flags || []).includes("risk")), del:n(a => a.verdict === "delete"),
+    noOwner:n(a => a.ownerState !== "ok"), unres:n(a => a.unrestricted), appHigh:n(a => a.appMax >= 3), secrets:sum("validSecrets"), certs:sum("validCerts"), expired:sum("expired"), long:sum("long")};
+}
+const tenantKey = () => S.raw?.demo ? "demo" : (S.raw?.org?.id || SS.get("tok")?.tid || S.cfg.tenant || "tenant");
+function snapshot(){
+  const apps = S.apps.map(minApp);
+  return {tool:"entra-app-cleanup", version:VERSION, takenAt:S.raw.scannedAt, tenant:{id:S.raw.org?.id || SS.get("tok")?.tid || "", name:S.raw.org?.name || S.cfg.tenant || ""},
+    inactiveDays:S.cfg.inactive, kpis:kpisOf(apps), apps};
+}
+function histGet(){ return LS.get("hist." + tenantKey(), []); }
+function histPush(snap){
+  let h = histGet().filter(x => x.takenAt !== snap.takenAt); h.unshift(snap); h = h.slice(0, 8);
+  for(let i = h.length; i > 0; i--){ try{ localStorage.setItem("eac.hist." + tenantKey(), JSON.stringify(h.slice(0, i))); return; }catch{} } // shrink if storage is full
+}
+function setBase(b){ S.base = b; try{ localStorage.setItem("eac.base." + tenantKey(), JSON.stringify(b)); }catch{} }
+function loadBase(){ S.base = LS.get("base." + tenantKey(), null); }
+function demoBaseline(){
+  const b = snapshot(); b.takenAt = new Date(Date.now() - 60 * DAY).toISOString();
+  b.apps = b.apps.map(a => ({...a, validSecrets:a.validSecrets + (a.risk >= 3 ? 1 : 0), expired:a.expired + (a.expired ? 1 : 0), unrestricted:a.unrestricted || a.tier >= 2,
+    risk:Math.min(4, a.risk + (a.tier >= 3 ? 1 : 0)), ownerState:a.ownerState === "ok" && a.tier <= 1 ? "none" : a.ownerState}));
+  ["Old SSO Test", "Hackathon 2023", "Legacy Fax Gateway", "Temp Migration Bot", "Vendor POC", "Test App 3", "Reporting v1", "Intranet Search Old", "Teams Webhook Test"].forEach((nm, i) =>
+    b.apps.push({appId:"00000000-0000-4000-8000-00000000000" + i, name:nm, tier:i % 3 ? 2 : 4, risk:4, verdict:"delete", ownerState:"none", unrestricted:true, appMax:i % 3 ? 2 : 4, validSecrets:1 + (i % 2), validCerts:0, expired:1, long:i % 2, flags:["risk", "noOwner"]}));
+  b.kpis = kpisOf(b.apps); return b;
+}
+function compare(){
+  const B = S.base; if(!B) return null;
+  const now = kpisOf(S.apps.map(minApp)), bm = new Map(B.apps.map(a => [a.appId, a])), nm = new Map(S.apps.map(a => [a.appId, a]));
+  return {now, base:B.kpis, gone:B.apps.filter(a => !nm.has(a.appId)), added:S.apps.filter(a => !bm.has(a.appId)),
+    better:S.apps.filter(a => bm.has(a.appId) && a.risk < bm.get(a.appId).risk), worse:S.apps.filter(a => bm.has(a.appId) && a.risk > bm.get(a.appId).risk)};
+}
+const deltaTxt = (b, n) => { const d = n - b; if(!d) return "="; const pc = b ? Math.round(d / b * 100) : null; return (d > 0 ? "+" : "−") + Math.abs(d) + (pc === null ? "" : ` (${d > 0 ? "+" : "−"}${Math.abs(pc)} %)`); };
+function renderKpi(){
+  if(!S.raw) return;
+  const C = compare(), now = C ? C.now : kpisOf(S.apps.map(minApp));
+  const h = histGet();
+  $("#histSel").innerHTML = `<option value="">${esc(t("kpHist"))}</option>` + h.map((x, i) => `<option value="${i}">${esc(fmtDate(x.takenAt) + " " + new Date(x.takenAt).toLocaleTimeString(LANG === "fr" ? "fr-FR" : "en-GB", {hour:"2-digit", minute:"2-digit"}) + " · " + x.kpis.total + " apps")}</option>`).join("");
+  $("#kpBaseSub").textContent = S.base ? t("kpBaseIs", fmtDate(S.base.takenAt), S.base.kpis.total, S.base.inactiveDays) + (S.base.tenant?.id && S.raw.org?.id && S.base.tenant.id !== S.raw.org.id ? " " + t("kpOtherTenant", S.base.tenant.name || S.base.tenant.id) : "") : t("kpNoBase");
+  $("#kpCmpSub").textContent = C ? t("kpCmpSub", fmtDate(S.base.takenAt), fmtDate(S.raw.scannedAt)) : t("kpCmpNone");
+  const max = Math.max(1, ...KPIS.map(k => Math.max(now[k], C ? C.base[k] : 0)));
+  $("#kpTbl").innerHTML = `<thead><tr><th>${esc(t("kpKpi"))}</th>${C ? `<th>${esc(t("kpBaseCol"))}</th>` : ""}<th>${esc(t("kpNowCol"))}</th>${C ? `<th>${esc(t("kpDelta"))}</th><th class="hide-sm" style="width:30%"></th>` : ""}</tr></thead><tbody>` +
+    KPIS.map(k => { const b = C ? C.base[k] : 0, n = now[k], d = n - b, good = k === "total" || k === "certs" ? 0 : -Math.sign(d);
+      return `<tr style="cursor:default"><td class="t">${esc(t("k_" + k))}</td>${C ? `<td class="num">${b}</td>` : ""}<td class="num"><b>${n}</b></td>${C ? `<td>${d ? pill(good > 0 ? "st-pass" : good < 0 ? "st-fail" : "st-na", deltaTxt(b, n)) : `<span class="muted">=</span>`}</td>
+        <td class="hide-sm"><div class="stack" style="margin:2px 0;height:6px"><span style="--c:var(--stroke-2);width:${b / max * 100}%"></span></div><div class="stack" style="margin:2px 0;height:6px"><span style="--c:var(--brand);width:${n / max * 100}%"></span></div></td>` : ""}</tr>`; }).join("") + "</tbody>";
+  const list = (title, L, isNow) => `<div class="card"><h2>${esc(t(title))} · ${L.length}</h2>${L.length ? `<table class="mini"><tbody>${L.slice(0, 12).map(a => `<tr ${isNow ? `data-id="${a.id}" style="cursor:pointer"` : ""}><td>${esc(a.name)}</td><td>${sevPill(a.risk)}</td></tr>`).join("")}</tbody></table>${L.length > 12 ? `<p class="muted small">${esc(t("clMore", L.length - 12))}</p>` : ""}` : `<p class="muted">${esc(t("kpEmpty"))}</p>`}</div>`;
+  $("#kpLists").innerHTML = C ? list("kpGone", C.gone, false) + list("kpBetter", C.better, true) + list("kpNew", C.added.concat(C.worse.filter(a => !C.added.includes(a))), true) : "";
+  $$("#kpLists tr[data-id]").forEach(r => r.onclick = () => openFly(r.dataset.id));
+}
+$("#snapBtn").onclick = () => { const sn = snapshot(); histPush(sn); download(`entra-app-cleanup-snapshot-${(sn.tenant.name || "tenant").replace(/[^a-z0-9]+/gi, "-")}-${stamp()}.json`, JSON.stringify(sn, null, 1), "application/json"); renderKpi(); };
+$("#kpiCsvBtn").onclick = () => {
+  const C = compare(), now = C ? C.now : kpisOf(S.apps.map(minApp)), q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = C ? ["KPI", "Baseline " + S.base.takenAt.slice(0, 10), "Now " + S.raw.scannedAt.slice(0, 10), "Change", "Change %"] : ["KPI", "Now " + S.raw.scannedAt.slice(0, 10)];
+  const rows = KPIS.map(k => C ? [t("k_" + k), C.base[k], now[k], now[k] - C.base[k], C.base[k] ? Math.round((now[k] - C.base[k]) / C.base[k] * 100) : ""] : [t("k_" + k), now[k]]);
+  download(`entra-app-cleanup-kpis-${stamp()}.csv`, "﻿" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n"), "text/csv");
+};
+$("#baseFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  try{ const j = JSON.parse(await f.text()); if(j.tool !== "entra-app-cleanup" || !j.kpis || !Array.isArray(j.apps)) throw 0; setBase(j); toast(t("kpLoaded")); renderKpi(); }
+  catch{ toast(t("kpBadFile")); }
+};
+$("#histSel").onchange = e => { const i = e.target.value; if(i === "") return; setBase(histGet()[+i]); toast(t("kpLoaded")); renderKpi(); };
+$("#baseClear").onclick = () => { S.base = null; try{ localStorage.removeItem("eac.base." + tenantKey()); }catch{} renderKpi(); };
+
 /* ---------------- PowerPoint deck ---------------- */
 function loadLib(){ return new Promise((res, rej) => { if(window.PptxGenJS) return res();
   const urls = ["https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js", "https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"];
   const next = i => { if(i >= urls.length) return rej(new Error("lib")); const s = document.createElement("script"); s.src = urls[i]; s.onload = () => window.PptxGenJS ? res() : next(i + 1); s.onerror = () => next(i + 1); document.head.appendChild(s); };
   next(0); }); }
+/* The deck is always in English, whatever the page language: recommendations are re-evaluated in English, then restored. */
 async function deck(){
   if(!S.raw) return;
   toast(t("deckBuilding"));
   try{ await loadLib(); }catch{ toast(t("deckFail")); return; }
+  const prev = LANG; LANG = "en"; evaluate();
+  let ok = true;
+  try{ await buildDeck(); }catch(e){ ok = false; console.warn(e); }
+  finally{ LANG = prev; evaluate(); }
+  toast(t(ok ? "deckDone" : "deckFail"));
+}
+async function buildDeck(){
   const p = new window.PptxGenJS(); p.layout = "LAYOUT_WIDE"; p.author = "Entra App Cleanup"; p.title = t("dTitle");
   const W = 13.333, FONT = "Segoe UI", INK = "242424", MUTE = "616161", BRAND = "0F6CBD", LINE = "E0E0E0";
   const SEVC = ["107C10", "616161", "8A5300", "8A3707", "C50F1F"];
   const tk = SS.get("tok");
-  const org = S.raw.demo ? "contoso.onmicrosoft.com (demo)" : (tk?.tenant || S.cfg.tenant || "");
+  const org = S.raw.org?.name || (S.raw.demo ? "Contoso" : (tk?.tenant || S.cfg.tenant || ""));
   const today = fmtDate(new Date().toISOString());
   const A = byRisk(S.apps);
   const frame = (s, title, sub) => { s.background = {color:"FFFFFF"};
@@ -1411,9 +1597,14 @@ async function deck(){
 
   // 1. Title
   let s = p.addSlide(); s.background = {color:"1B1A19"};
-  [["F25022", 0], ["7FBA00", 1], ["00A4EF", 2], ["FFB900", 3]].forEach(([c, i]) => s.addShape(p.ShapeType.rect, {x:0.6 + (i % 2) * 0.32, y:0.6 + Math.floor(i / 2) * 0.32, w:0.28, h:0.28, fill:{color:c}, line:{color:c}}));
+  const lg = S.raw.org?.logo;
+  if(lg){ // tenant logo from Entra company branding, on a white panel so dark logos stay readable
+    const maxW = 3.6, maxH = 1.0; let w = maxW, h = w * lg.h / lg.w; if(h > maxH){ h = maxH; w = h * lg.w / lg.h; }
+    s.addShape(p.ShapeType.roundRect, {x:0.6, y:0.55, w:w + 0.5, h:h + 0.4, fill:{color:"FFFFFF"}, line:{color:"FFFFFF"}, rectRadius:0.08});
+    s.addImage({data:lg.data.replace(/^data:/, ""), x:0.85, y:0.75, w, h});
+  } else [["F25022", 0], ["7FBA00", 1], ["00A4EF", 2], ["FFB900", 3]].forEach(([c, i]) => s.addShape(p.ShapeType.rect, {x:0.6 + (i % 2) * 0.32, y:0.6 + Math.floor(i / 2) * 0.32, w:0.28, h:0.28, fill:{color:c}, line:{color:c}}));
   s.addText(t("dTitle"), {x:0.6, y:2.2, w:12, h:1, fontFace:FONT, fontSize:40, bold:true, color:"FFFFFF"});
-  s.addText(org + "  ·  " + today, {x:0.6, y:3.2, w:12, h:0.5, fontFace:FONT, fontSize:20, color:"C2C2C2"});
+  s.addText([org, S.raw.org?.domain, today].filter(Boolean).join("  ·  "), {x:0.6, y:3.2, w:12, h:0.5, fontFace:FONT, fontSize:20, color:"C2C2C2"});
   s.addText([
     {text:A.length + " ", options:{bold:true, color:"FFFFFF"}}, {text:t("kTotal") + "   ·   ", options:{color:"C2C2C2"}},
     {text:n(a => a.risk === 4) + " ", options:{bold:true, color:"F1707B"}}, {text:t("sev_crit") + "   ·   ", options:{color:"C2C2C2"}},
@@ -1434,6 +1625,22 @@ async function deck(){
     catAxisLabelFontFace:FONT, showLegend:false, showTitle:true, title, titleFontSize:13, titleFontFace:FONT, titleColor:INK, valGridLine:{color:"EEEEEE", size:0.5}, catAxisOrientation:"maxMin"});
   s.addChart(p.ChartType.bar, [{name:t("dBySev"), labels:[4, 3, 2, 1, 0].map(v => t("sev_" + SEVN[v])), values:sevCounts}], chartOpt(0.5, t("dBySev"), ["C50F1F", "8A3707", "8A5300", "8A8A8A", "107C10"]));
   s.addChart(p.ChartType.bar, [{name:t("dByTier"), labels:[4, 3, 2, 1, 0].map(v => t("l_" + LVN[v])), values:tierCounts}], chartOpt(6.8, t("dByTier"), ["C50F1F", "8A3707", "8A5300", "8A8A8A", "D1D1D1"]));
+
+  // 2b. Progress since the baseline
+  const C = compare();
+  if(C){
+    s = p.addSlide(); frame(s, t("dProg"), t("dProgSub", fmtDate(S.base.takenAt), fmtDate(S.raw.scannedAt)));
+    const rows = [hdr([t("kpKpi"), t("kpBaseCol"), t("kpNowCol"), t("kpDelta")])];
+    KPIS.forEach(k => { const b = C.base[k], nw = C.now[k], d = nw - b, good = k === "total" || k === "certs" ? 0 : -Math.sign(d);
+      rows.push([{text:t("k_" + k), options:{bold:true}}, {text:String(b), options:{align:"center"}}, {text:String(nw), options:{align:"center", bold:true}},
+        {text:d ? deltaTxt(b, nw) : "=", options:{align:"center", bold:true, color:good > 0 ? "107C10" : good < 0 ? "C50F1F" : MUTE}}]); });
+    s.addTable(rows, {x:0.5, y:1.35, w:7.6, colW:[3.9, 1.0, 1.0, 1.7], fontFace:FONT, fontSize:10.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", rowH:0.38, autoPage:false});
+    const ck = ["risk", "del", "sens", "noOwner", "unres"];
+    s.addChart(p.ChartType.bar, [{name:t("kpBaseCol"), labels:ck.map(k => t("k_" + k)), values:ck.map(k => C.base[k])}, {name:t("kpNowCol"), labels:ck.map(k => t("k_" + k)), values:ck.map(k => C.now[k])}],
+      {x:8.4, y:1.35, w:4.5, h:4.3, barDir:"bar", barGrouping:"clustered", chartColors:["B0B0B0", BRAND], showValue:true, dataLabelFontSize:9, catAxisLabelFontSize:8.5, valAxisHidden:true,
+       showLegend:true, legendPos:"b", legendFontSize:9, catAxisOrientation:"maxMin", valGridLine:{style:"none"}});
+    s.addText(t("dProgGone", C.gone.length, C.added.length, C.better.length), {x:8.4, y:5.8, w:4.5, h:0.8, fontFace:FONT, fontSize:12, bold:true, color:INK});
+  }
 
   // 3. Action plan (recommendations grouped)
   const groups = new Map();
@@ -1477,26 +1684,43 @@ async function deck(){
       {x:0.5, y:3.85, w:5.9, colW:[1.2, 3.6, 1.1], fontFace:FONT, fontSize:9.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, rowH:0.3, autoPage:false});
     else s.addText(t("pNone"), {x:0.5, y:3.85, w:5.9, h:0.3, fontFace:FONT, fontSize:11, color:MUTE});
     s.addText(t("flyReco"), {x:6.8, y:1.4, w:6, h:0.35, fontFace:FONT, fontSize:13, bold:true, color:INK});
-    s.addText(a.recs.slice(0, 7).map(r => ({text:"[" + t("sev_" + SEVN[r.sev]) + "]  " + r.txt, options:{bullet:true, breakLine:true, color:SEVC[r.sev] === "616161" ? INK : INK}})),
-      {x:6.8, y:1.8, w:6, h:a.ipInfo?.ranges?.length ? 3.4 : 5.1, fontFace:FONT, fontSize:10.5, color:INK, valign:"top", paraSpaceAfter:6});
-    if(a.ipInfo && !a.ipInfo.err && a.ipInfo.ranges.length){
+    const wid = a.appOnly && a.spId;
+    s.addText(a.recs.slice(0, wid ? 4 : 8).map(r => ({text:"[" + t("sev_" + SEVN[r.sev]) + "]  " + r.txt, options:{bullet:true, breakLine:true}})),
+      {x:6.8, y:1.75, w:6, h:wid ? 1.75 : 5.1, fontFace:FONT, fontSize:wid ? 9 : 10.5, color:INK, valign:"top", paraSpaceAfter:3});
+    if(wid){
+      const ws = caWarnings(a, false).concat(caWarnings(a).filter(w => w.k === "w_window" || w.k === "w_dynamic"));
+      s.addShape(p.ShapeType.rect, {x:6.8, y:3.6, w:6, h:caReady(a) ? 1.9 : 3.3, fill:{color:"FFF4CE"}, line:{color:"E8C55B"}});
+      s.addText([{text:"⚠  " + t("wTitle"), options:{bold:true, breakLine:true, color:"8A5300"}}].concat(ws.slice(0, 4).map(w => ({text:w.txt, options:{bullet:true, breakLine:true}}))),
+        {x:6.9, y:3.63, w:5.8, h:caReady(a) ? 1.85 : 3.25, fontFace:FONT, fontSize:8, color:INK, valign:"top", paraSpaceAfter:2});
+    }
+    if(caReady(a)){
       const nm = caNames(a);
-      s.addShape(p.ShapeType.rect, {x:6.8, y:5.3, w:6, h:1.6, fill:{color:"EBF3FC"}, line:{color:"B4D6FA"}});
+      s.addShape(p.ShapeType.rect, {x:6.8, y:5.6, w:6, h:1.3, fill:{color:"EBF3FC"}, line:{color:"B4D6FA"}});
       s.addText([{text:t("flyWid"), options:{bold:true, breakLine:true}}, {text:t("ipHead", a.ipInfo.events, a.ipInfo.ips.length, ""), options:{breakLine:true}},
         {text:t("dRanges") + " : " + a.ipInfo.ranges.map(r => r.cidr).slice(0, 8).join(", ") + (a.ipInfo.ranges.length > 8 ? " …" : ""), options:{breakLine:true, fontFace:"Consolas", fontSize:9}},
-        {text:t("dPolicy") + " : " + nm.pol + " (report-only)"}], {x:6.95, y:5.35, w:5.7, h:1.5, fontFace:FONT, fontSize:10, color:INK, valign:"top"});
+        {text:t("dPolicy") + " : " + nm.pol + " (report-only)"}], {x:6.95, y:5.63, w:5.7, h:1.25, fontFace:FONT, fontSize:9.5, color:INK, valign:"top"});
     }
   });
 
-  // 6. Workload identity CA
+  // 6. Warnings, then workload identity CA proposals
+  s = p.addSlide(); frame(s, t("dWarn"), t("dWarnSub"));
+  s.addText("⚠  " + t("dWarnGen"), {x:0.5, y:1.35, w:5.8, h:0.35, fontFace:FONT, fontSize:14, bold:true, color:"8A5300"});
+  s.addText(W_GEN.map(k => ({text:t(k), options:{bullet:true, breakLine:true}})), {x:0.5, y:1.75, w:5.8, h:5.1, fontFace:FONT, fontSize:10.5, color:INK, valign:"top", paraSpaceAfter:6});
+  const spec = A.filter(a => a.appOnly && a.spId).map(a => ({a, w:caWarnings(a, false)})).filter(x => x.w.length).sort((x, y) => y.a.tier - x.a.tier);
+  s.addText(t("dWarnApp"), {x:6.7, y:1.35, w:6.1, h:0.35, fontFace:FONT, fontSize:14, bold:true, color:INK});
+  if(spec.length) s.addTable([hdr([t("cName"), t("wTitle")])].concat(spec.slice(0, 9).map(x => [{text:x.a.name, options:{bold:true}}, {text:x.w.map(w => "• " + w.txt).join("\n")}])),
+    {x:6.7, y:1.75, w:6.1, colW:[1.7, 4.4], fontFace:FONT, fontSize:8.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", autoPage:false});
+  else s.addText(t("dWarnNone"), {x:6.7, y:1.75, w:6.1, h:0.4, fontFace:FONT, fontSize:12, color:MUTE});
+
   s = p.addSlide(); frame(s, t("dWid"), t("dWidSub"));
   const W2 = A.filter(a => a.appOnly && a.ipInfo && !a.ipInfo.err).sort((x, y) => y.tier - x.tier);
   if(W2.length){
-    const rows = [hdr([t("cName"), t("cTier"), t("ipCount"), "IP", t("dRanges"), t("dPolicy")])];
-    W2.slice(0, 13).forEach(a => rows.push([{text:a.name, options:{bold:true}}, lvCell(a.tier), {text:String(a.ipInfo.events)}, {text:String(a.ipInfo.ips.length)},
+    const rows = [hdr([t("cName"), t("cTier"), t("ipCount"), "IP", t("dRanges"), "⚠", t("dPolicy")])];
+    W2.slice(0, 13).forEach(a => { const nw = caWarnings(a, false).length; rows.push([{text:a.name, options:{bold:true}}, lvCell(a.tier), {text:String(a.ipInfo.events)}, {text:String(a.ipInfo.ips.length)},
       {text:a.ipInfo.ranges.map(r => r.cidr).slice(0, 4).join(", ") + (a.ipInfo.ranges.length > 4 ? " …" : "") || "—", options:{fontFace:"Consolas", fontSize:8.5}},
-      {text:a.ipInfo.ranges.length ? caNames(a).pol : t("ipNone"), options:{color:MUTE}}]));
-    s.addTable(rows, {x:0.5, y:1.4, w:12.3, colW:[2.4, 1.0, 1.0, 0.7, 3.4, 3.8], fontFace:FONT, fontSize:10, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", rowH:0.38, autoPage:false});
+      {text:nw ? String(nw) : "—", options:{bold:true, align:"center", color:nw ? "8A5300" : MUTE}},
+      {text:caReady(a) ? caNames(a).pol : (a.flags.includes("multi") ? "Multi-tenant: not covered" : t("ipNone")), options:{color:MUTE}}]); });
+    s.addTable(rows, {x:0.5, y:1.4, w:12.3, colW:[2.3, 0.95, 0.95, 0.5, 3.3, 0.5, 3.8], fontFace:FONT, fontSize:10, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", rowH:0.38, autoPage:false});
   } else s.addText(t("dWidNone"), {x:0.5, y:1.6, w:12, h:0.6, fontFace:FONT, fontSize:15, color:"8A5300"});
 
   // 7. Method
@@ -1504,7 +1728,7 @@ async function deck(){
   s.addText(T[LANG].dMethodItems.map(x => ({text:x, options:{bullet:true, breakLine:true}})), {x:0.5, y:1.3, w:12.3, h:5.5, fontFace:FONT, fontSize:14, color:INK, valign:"top", paraSpaceAfter:10});
 
   const name = "EntraAppCleanup-" + (org || "tenant").replace(/[^a-z0-9]+/gi, "-") + "-" + stamp() + ".pptx";
-  try{ await p.writeFile({fileName:name}); toast(t("deckDone")); }catch{ toast(t("deckFail")); }
+  await p.writeFile({fileName:name});
 }
 $$("[data-deck]").forEach(b => b.onclick = deck);
 
@@ -1552,19 +1776,26 @@ function demoData(){
       [...pw, ...kc].forEach(c => { if(rnd() < .6) creds.push({keyId:c.keyId, appId, signInActivity:{lastSignInDateTime:d}}); });
     }
   });
-  return {apps, signins, creds, sps, resources, assignments, grants, ips:{}, signOk:true, credOk:true, permOk:true, grantOk:true, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:true};
+  return {org:{name:"Contoso", domain:"contoso.onmicrosoft.com", logo:demoLogo()}, orgOk:true, apps, signins, creds, sps, resources, assignments, grants, ips:{}, signOk:true, credOk:true, permOk:true, grantOk:true, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:true};
+}
+function demoLogo(){ // fictitious "Contoso" banner logo for the demo deck
+  const c = document.createElement("canvas"); c.width = 490; c.height = 72; const x = c.getContext("2d");
+  x.fillStyle = "#0f6cbd"; x.beginPath(); x.moveTo(8, 64); x.lineTo(36, 8); x.lineTo(64, 64); x.closePath(); x.fill();
+  x.fillStyle = "#242424"; x.font = "600 46px Segoe UI, Arial, sans-serif"; x.textBaseline = "middle"; x.fillText("Contoso", 82, 38);
+  return {data:c.toDataURL("image/png"), w:490, h:72};
 }
 async function demoIps(a){
   await sleep(120);
   const base = pick(["203.0.113", "198.51.100", "192.0.2"]);
   const ips = [];
   const k = 1 + Math.floor(rnd() * 4);
-  for(let i = 0; i < k; i++) ips.push({ip:`${base}.${10 + Math.floor(rnd() * 200)}`, count:5 + Math.floor(rnd() * 900), last:new Date(Date.now() - rnd() * 5 * DAY).toISOString(), where:pick(["Paris, FR", "Amsterdam, NL", "Dublin, IE"]), fail:0});
-  if(rnd() < .3) ips.push({ip:"2001:db8:10:20::" + Math.floor(rnd() * 99), count:12, last:new Date().toISOString(), where:"Paris, FR", fail:0});
+  for(let i = 0; i < k; i++){ const c = 5 + Math.floor(rnd() * 900); ips.push({ip:`${base}.${10 + Math.floor(rnd() * 200)}`, count:c, ok:c, last:new Date(Date.now() - rnd() * 5 * DAY).toISOString(), where:pick(["Paris, FR", "Amsterdam, NL", "Dublin, IE"]), fail:0}); }
+  if(rnd() < .3) ips.push({ip:"2001:db8:10:20::" + Math.floor(rnd() * 99), count:12, ok:12, last:new Date().toISOString(), where:"Paris, FR", fail:0});
+  if(rnd() < .25) ips.push({ip:"185.220.101." + Math.floor(rnd() * 250), count:3, ok:0, last:new Date().toISOString(), where:"Frankfurt, DE", fail:3});
   ips.sort((p, q) => q.count - p.count);
-  return {at:new Date().toISOString(), events:ips.reduce((m, x) => m + x.count, 0), truncated:false, ips, ranges:toRanges(ips)};
+  return {at:new Date().toISOString(), events:ips.reduce((m, x) => m + x.count, 0), truncated:false, ips, ranges:toRanges(ips.filter(x => x.ok > 0))};
 }
-$("#demoBtn").onclick = () => { readCfg(); S.raw = demoData(); evaluate(); renderAll(); go("overview"); };
+$("#demoBtn").onclick = () => { readCfg(); S.raw = demoData(); evaluate(); S.base = demoBaseline(); renderAll(); go("overview"); };
 
 /* ---------------- wiring ---------------- */
 $("#signInBtn").onclick = async () => { readCfg(); const tk = SS.get("tok"); if(tk && tk.clientId === S.cfg.clientId && tk.tenant === S.cfg.tenant && await token()) scan(); else signIn(); };
@@ -1577,9 +1808,9 @@ function renderAll(){
   applyI18n(); renderConnect();
   $$("nav.side a.needdata").forEach(a => a.classList.toggle("off", !S.raw));
   if(S.raw){
-    renderOverview(); syncFilterUI(); renderApps(); renderSensitive(); renderCleanup();
+    renderOverview(); syncFilterUI(); renderApps(); renderSensitive(); renderCleanup(); renderKpi();
     const notes = [];
-    if(S.raw.demo) notes.push(t("demoOn"));
+    if(S.raw.demo) notes.push(t("demoOn") + " " + t("kpDemoBase"));
     if(!S.raw.signOk) notes.push(t("errSignNA", S.raw.signErr));
     else if(!S.raw.credOk) notes.push(t("errCredNA", S.raw.credErr));
     if(!S.raw.permOk) notes.push(t("errPermNA", S.raw.permErr));
@@ -1598,7 +1829,7 @@ function renderAll(){
     if(await handleRedirect()){ renderAll(); go("connect"); await scan(); return; }
   }catch(e){ banner(t("errAuth", e.message), "err"); }
   const h = location.hash.slice(1);
-  go(["overview", "apps", "sensitive", "cleanup", "connect", "about"].includes(h) ? h : "connect");
+  go(["overview", "apps", "sensitive", "cleanup", "kpi", "connect", "about"].includes(h) ? h : "connect");
 })();
 
 </script>

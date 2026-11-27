@@ -493,7 +493,7 @@ en:{
   widTitle:"Workload identities: IP-based Conditional Access", widSub:"For apps that sign in with their own identity (app-only), read their service principal sign-ins for the last 30 days, then propose a named location and a policy that blocks them outside these IPs. Report-only first. Needs Workload Identities Premium.",
   snIntro:"Apps ranked by sensitivity: what they can do with the permissions actually granted, whether they act on their own (app-only) or for a user (delegated), and whether any user can sign in to them.",
   sev_crit:"Critical", sev_high:"High", sev_med:"Medium", sev_low:"Low", sev_ok:"OK",
-  r_rmSecrets:"Remove the valid secrets and certificates now: the app is unused but can still authenticate. Do it before the delete decision.",
+  r_rmSecrets:"Remove the valid secrets, certificates and federated credentials now: the app is unused but can still authenticate. Do it before the delete decision.",
   r_delete:"No sign-in for more than {0} days and created over {0} days ago: confirm with the owner, then delete the app. A deleted app stays restorable for 30 days.",
   r_reducePerms:"Reduce application permissions: {0}.",
   r_caWid:"Restrict where the app can sign in from: Conditional Access for workload identities, block outside known IPs (report-only first).",
@@ -535,6 +535,21 @@ en:{
   tLogActive:"Active in the logs", tLogNone:"Logs: no sign-in", tLogFail:"Logs: failures only", vfProgress:"{0}/{1} checked…", vfDone:"{0} app(s) checked.",
   r_logActive:"The sign-in logs show {0} successful sign-in(s) over 30 days while the activity report says inactive: do not delete, check with the owner which flow uses it.",
   rs_logActive:"Active in the logs: do not delete",
+  stApi:"API definitions (permission names)", stRole:"Entra roles held by the apps", stFic:"Federated credentials",
+  errRoleNA:"Entra role assignments are not available ({0}).", errFicNA:"Federated credentials are not available ({0}).",
+  pRole:"Entra role", fFics:"{0} federated", c_fic:"Federated credential only",
+  tRole:"Entra role", tOwnerEsc:"Owners can escalate", tFic:"Federated credential", tRedirect:"Risky redirect URI", tTakeover:"Redirect to a cloud host", tImplicit:"Implicit grant", tPublic:"Public client",
+  flyCfg:"Configuration", cfgImplicit:"Implicit grant", cfgPublic:"Public client flows", cfgUris:"Redirect URIs", cfgFic:"Federated credentials", cfgOn:"On", cfgOff:"Off", cfgOnAT:"Access tokens on", cfgOnId:"ID tokens only",
+  r_reviewRole:"The service principal holds Entra role(s) {0}: more powerful than any Graph permission. Remove them, or scope them to an administrative unit and use a dedicated, monitored identity.",
+  r_ownerEsc:"{0} owner(s) can add a secret to this sensitive app and act with its permissions: keep owners to a minimum, only admins protected by PIM, and alert on credential additions.",
+  r_redirectWildcard:"Remove the wildcard redirect URIs ({0}): tokens can be sent to an address you do not control.",
+  r_redirectHttp:"Replace the http redirect URIs ({0}) with https: codes and tokens would travel in clear text.",
+  r_redirectTakeover:"Redirect URIs point to cloud hosts ({0}): check that the resource still exists, otherwise remove the URI (an attacker could claim the name and receive tokens).",
+  r_implicit:"Turn off the implicit grant for access tokens: use the authorization code flow with PKCE.",
+  r_publicClient:"Turn off \"Allow public client flows\" unless a native app or device code flow really needs it: it allows the password (ROPC) and device code flows without a secret.",
+  r_ficReview:"Check the federated credentials (who can get a token for this app): {0}.",
+  rs_reviewRole:"Remove Entra role", rs_ownerEsc:"Limit owners (escalation)", rs_redirectWildcard:"Remove wildcard redirect", rs_redirectHttp:"Redirect URIs to https", rs_redirectTakeover:"Check cloud redirect hosts", rs_implicit:"Turn off implicit grant", rs_publicClient:"Turn off public client", rs_ficReview:"Review federated credentials",
+  k_roles:"Apps holding a privileged Entra role", k_config:"Apps with a risky configuration",
   navKpi:"KPI tracking",
   kpIntro:"Save the current state before cleaning up, then compare after. Every scan is also kept in this browser's history (last 8, per tenant).",
   kpSave:"Current state", kpSaveSub:"Download a snapshot (JSON) of the KPIs and of each app's state. Keep it with your project files: it is your baseline.", kpSaveBtn:"Save a snapshot (JSON)", kpCsvBtn:"Export KPIs (CSV)",
@@ -635,7 +650,7 @@ fr:{
   widTitle:"Identités de charge de travail : accès conditionnel par IP", widSub:"Pour les apps qui se connectent avec leur propre identité (app seule), lit les connexions de leur principal de service sur 30 jours, puis propose un emplacement nommé et une stratégie qui les bloque hors de ces IP. D'abord en rapport seul. Demande Workload Identities Premium.",
   snIntro:"Apps classées par sensibilité : ce qu'elles peuvent faire avec les permissions réellement accordées, si elles agissent seules (app seule) ou pour un utilisateur (déléguées), et si n'importe quel utilisateur peut s'y connecter.",
   sev_crit:"Critique", sev_high:"Élevée", sev_med:"Moyenne", sev_low:"Faible", sev_ok:"OK",
-  r_rmSecrets:"Retirez dès maintenant les secrets et certificats valides : l'app est inutilisée mais peut encore s'authentifier. À faire avant la décision de suppression.",
+  r_rmSecrets:"Retirez dès maintenant les secrets, certificats et identifiants fédérés valides : l'app est inutilisée mais peut encore s'authentifier. À faire avant la décision de suppression.",
   r_delete:"Aucune connexion depuis plus de {0} jours et créée il y a plus de {0} jours : confirmez avec le propriétaire, puis supprimez l'app. Une app supprimée reste restaurable 30 jours.",
   r_reducePerms:"Réduisez les permissions d'application : {0}.",
   r_caWid:"Limitez d'où l'app peut se connecter : accès conditionnel pour identités de charge de travail, blocage hors des IP connues (d'abord en rapport seul).",
@@ -677,6 +692,21 @@ fr:{
   tLogActive:"Active dans les journaux", tLogNone:"Journaux : aucune connexion", tLogFail:"Journaux : échecs seulement", vfProgress:"{0}/{1} vérifiées…", vfDone:"{0} app(s) vérifiée(s).",
   r_logActive:"Les journaux de connexion montrent {0} connexion(s) réussie(s) sur 30 jours alors que le rapport d'activité la dit inactive : ne supprimez pas, voyez avec le propriétaire quel flux l'utilise.",
   rs_logActive:"Active dans les journaux : ne pas supprimer",
+  stApi:"Définitions des API (noms des permissions)", stRole:"Rôles Entra détenus par les apps", stFic:"Identifiants fédérés",
+  errRoleNA:"Les attributions de rôles Entra sont indisponibles ({0}).", errFicNA:"Les identifiants fédérés sont indisponibles ({0}).",
+  pRole:"Rôle Entra", fFics:"{0} fédéré(s)", c_fic:"Identifiant fédéré seul",
+  tRole:"Rôle Entra", tOwnerEsc:"Escalade par les propriétaires", tFic:"Identifiant fédéré", tRedirect:"URI de redirection risquée", tTakeover:"Redirection vers un hébergeur cloud", tImplicit:"Flux implicite", tPublic:"Client public",
+  flyCfg:"Configuration", cfgImplicit:"Flux implicite", cfgPublic:"Flux client public", cfgUris:"URI de redirection", cfgFic:"Identifiants fédérés", cfgOn:"Activé", cfgOff:"Désactivé", cfgOnAT:"Jetons d'accès activés", cfgOnId:"Jetons d'ID seulement",
+  r_reviewRole:"Le principal de service détient le ou les rôles Entra {0} : plus puissant que n'importe quelle permission Graph. Retirez-les, ou limitez-les à une unité administrative avec une identité dédiée et surveillée.",
+  r_ownerEsc:"{0} propriétaire(s) peuvent ajouter un secret à cette app sensible et agir avec ses permissions : limitez les propriétaires au strict minimum, uniquement des admins sous PIM, et alertez sur les ajouts d'identifiants.",
+  r_redirectWildcard:"Retirez les URI de redirection avec joker ({0}) : des jetons peuvent partir vers une adresse que vous ne contrôlez pas.",
+  r_redirectHttp:"Passez les URI de redirection http ({0}) en https : codes et jetons circuleraient en clair.",
+  r_redirectTakeover:"Des URI de redirection pointent vers des hébergeurs cloud ({0}) : vérifiez que la ressource existe toujours, sinon retirez l'URI (un attaquant pourrait réserver le nom et recevoir des jetons).",
+  r_implicit:"Désactivez le flux implicite pour les jetons d'accès : utilisez le flux authorization code avec PKCE.",
+  r_publicClient:"Désactivez « Autoriser les flux de clients publics » sauf si une app native ou le code d'appareil en a vraiment besoin : cela autorise les flux mot de passe (ROPC) et code d'appareil sans secret.",
+  r_ficReview:"Vérifiez les identifiants fédérés (qui peut obtenir un jeton pour cette app) : {0}.",
+  rs_reviewRole:"Retirer le rôle Entra", rs_ownerEsc:"Limiter les propriétaires (escalade)", rs_redirectWildcard:"Retirer la redirection joker", rs_redirectHttp:"Redirections en https", rs_redirectTakeover:"Vérifier les hôtes cloud de redirection", rs_implicit:"Désactiver le flux implicite", rs_publicClient:"Désactiver le client public", rs_ficReview:"Revoir les identifiants fédérés",
+  k_roles:"Apps détenant un rôle Entra privilégié", k_config:"Apps à la configuration risquée",
   navKpi:"Suivi des KPI",
   kpIntro:"Enregistrez l'état actuel avant de nettoyer, puis comparez après. Chaque analyse est aussi gardée dans l'historique de ce navigateur (8 dernières, par tenant).",
   kpSave:"État actuel", kpSaveSub:"Téléchargez une photo (JSON) des KPI et de l'état de chaque app. Gardez-la avec les documents du projet : c'est votre référence.", kpSaveBtn:"Enregistrer une photo (JSON)", kpCsvBtn:"Exporter les KPI (CSV)",
@@ -756,6 +786,12 @@ function permLevel(value, kind){
 const ALT = [[/^Sites\.(FullControl|ReadWrite|Read|Manage)\.All$|^Files\.(ReadWrite|Read)\.All$/, "altSites"], [/^(Mail|Calendars|Contacts|MailboxSettings)\./, "altExo"],
   [/^full_access_as_app$/, "altEws"], [/^Directory\.ReadWrite\.All$/, "altDir"], [/^Application\.ReadWrite\.All$/, "altApp"], [/^(User|Group|GroupMember)\.ReadWrite\.All$/, "altAu"],
   [/^(RoleManagement|RoleAssignmentSchedule|RoleEligibilitySchedule)\.ReadWrite\.Directory$/, "altRole"]];
+const ROLE_CRIT = new Set(["Global Administrator", "Privileged Role Administrator", "Privileged Authentication Administrator", "Application Administrator", "Cloud Application Administrator",
+  "Partner Tier2 Support", "Hybrid Identity Administrator", "Conditional Access Administrator", "Directory Synchronization Accounts", "Security Administrator"]);
+const ROLE_HIGH = new Set(["User Administrator", "Groups Administrator", "Authentication Administrator", "Exchange Administrator", "SharePoint Administrator", "Teams Administrator",
+  "Intune Administrator", "Directory Writers", "Helpdesk Administrator", "Password Administrator", "Authentication Policy Administrator", "Identity Governance Administrator", "Lifecycle Workflows Administrator"]);
+const roleLevel = n => ROLE_CRIT.has(n) ? 4 : ROLE_HIGH.has(n) ? 3 : /Reader/.test(n) ? 1 : 2;
+const TAKEOVER = /\.(azurewebsites\.net|cloudapp\.net|cloudapp\.azure\.com|trafficmanager\.net|blob\.core\.windows\.net|azureedge\.net|azurefd\.net|azurestaticapps\.net|herokuapp\.com|github\.io|netlify\.app|vercel\.app)(:\d+)?(\/|$)/i;
 const altOf = v => (ALT.find(([re]) => re.test(v)) || [])[1];
 
 /* ---------------- state ---------------- */
@@ -879,6 +915,32 @@ async function gImage(url){
   const dim = await new Promise(res => { const im = new Image(); im.onload = () => res({w:im.naturalWidth, h:im.naturalHeight}); im.onerror = () => res(null); im.src = data; });
   return dim && dim.w ? {data, ...dim} : null;
 }
+/* JSON $batch: 20 GET per call, per-request retry on throttling, then follows nextLinks. Returns [{status, body}] in input order. */
+async function gBatch(urls, onProgress){
+  const out = new Array(urls.length);
+  for(let i = 0; i < urls.length; i += 20){
+    let pending = urls.slice(i, i + 20).map((u, k) => ({id:String(i + k), method:"GET", url:u}));
+    for(let attempt = 0; pending.length && attempt < 7; attempt++){
+      const at = await token(); if(!at){ const e = new Error("expired"); e.expired = true; throw e; }
+      const r = await fetch(GRAPH + "/v1.0/$batch", {method:"POST", headers:{Authorization:"Bearer " + at, "Content-Type":"application/json"}, body:JSON.stringify({requests:pending})});
+      if(r.status === 429 || r.status >= 500){ await sleep(2 ** attempt * 1000); continue; }
+      const j = await r.json().catch(() => ({}));
+      if(!r.ok){ const e = new Error(j.error?.message || ("HTTP " + r.status)); e.status = r.status; throw e; }
+      const retry = []; let wait = 0;
+      (j.responses || []).forEach(resp => {
+        if(resp.status === 429 || resp.status >= 500){ retry.push(pending.find(x => x.id === resp.id)); wait = Math.max(wait, +(resp.headers?.["Retry-After"] || 2 ** attempt)); }
+        else out[+resp.id] = resp;
+      });
+      pending = retry.filter(Boolean); if(pending.length) await sleep(Math.min(wait, 30) * 1000);
+    }
+    onProgress && onProgress(Math.min(i + 20, urls.length), urls.length);
+  }
+  for(const resp of out){
+    const next = resp?.status === 200 && resp.body?.["@odata.nextLink"];
+    if(next){ const more = await gAll(next); resp.body.value = (resp.body.value || []).concat(more); }
+  }
+  return out;
+}
 async function gAll(url, onPage, maxPages = Infinity){
   let out = [], pages = 0;
   while(url && pages < maxPages){ const j = await g(url); out = out.concat(j.value || []); pages++; onPage && onPage(out.length); url = j["@odata.nextLink"]; }
@@ -900,8 +962,8 @@ function prog(id, state, count = ""){
 async function scan(){
   banner("");
   $("#signInBtn").disabled = $("#reloadBtn").disabled = true;
-  progressUI(["Apps", "Org", "Sign", "Cred", "Perm", "Grant"]);
-  const raw = {org:null, orgOk:false, orgErr:"", apps:[], signins:[], creds:[], sps:[], resources:[], assignments:[], grants:[], ips:{},
+  progressUI(["Apps", "Org", "Sign", "Cred", "Perm", "Grant", "Api", "Role", "Fic"]);
+  const raw = {org:null, orgOk:false, orgErr:"", roles:[], roleOk:false, roleErr:"", fics:{}, ficOk:false, ficErr:"", apiOk:false, apiErr:"", apps:[], signins:[], creds:[], sps:[], resources:[], assignments:[], grants:[], ips:{},
     signOk:false, credOk:false, permOk:false, grantOk:false, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:false};
   const soft = async (id, okKey, errKey, fn) => {
     prog(id, "run");
@@ -910,7 +972,7 @@ async function scan(){
   };
   try{
     prog("Apps", "run");
-    const sel = "id,appId,displayName,createdDateTime,signInAudience,publisherDomain,passwordCredentials,keyCredentials,requiredResourceAccess";
+    const sel = "id,appId,displayName,createdDateTime,signInAudience,publisherDomain,passwordCredentials,keyCredentials,requiredResourceAccess,web,spa,publicClient,isFallbackPublicClient";
     const base = `/v1.0/applications?$select=${sel}&$top=100&$expand=`;
     try{ raw.apps = await gAll(base + "owners($select=id,displayName,userPrincipalName,accountEnabled)", n => prog("Apps", "run", n)); }
     catch(e){ if(e.expired) throw e; raw.apps = await gAll(base + "owners", n => prog("Apps", "run", n)); }
@@ -929,28 +991,43 @@ async function scan(){
     await soft("Sign", "signOk", "signErr", async () => { raw.signins = await gAll("/beta/reports/servicePrincipalSignInActivities", n => prog("Sign", "run", n)); return raw.signins.length; });
     await soft("Cred", "credOk", "credErr", async () => { raw.creds = await gAll("/beta/reports/appCredentialSignInActivities", n => prog("Cred", "run", n)); return raw.creds.length; });
 
+    /* Per service principal, through $batch: covers every API (not only the requested ones) and scales with the number of apps, not users. */
     let ourSp = new Set();
     await soft("Perm", "permOk", "permErr", async () => {
       raw.sps = await gAll("/v1.0/servicePrincipals?$select=id,appId,displayName,appRoleAssignmentRequired,servicePrincipalType&$top=999", n => prog("Perm", "run", n));
       const spByApp = new Map(raw.sps.map(s => [(s.appId || "").toLowerCase(), s]));
       ourSp = new Set(raw.apps.map(a => spByApp.get((a.appId || "").toLowerCase())?.id).filter(Boolean));
-      const resApps = new Set(Object.values(RES));
-      raw.apps.forEach(a => (a.requiredResourceAccess || []).forEach(r => resApps.add((r.resourceAppId || "").toLowerCase())));
-      let i = 0;
-      for(const ra of resApps){
-        const sp = spByApp.get(ra); i++; if(!sp) continue;
-        prog("Perm", "run", `${i}/${resApps.size}`);
-        const d = await g(`/v1.0/servicePrincipals/${sp.id}?$select=id,appId,displayName,appRoles,oauth2PermissionScopes`);
-        raw.resources.push({id:d.id, appId:d.appId, name:d.displayName, roles:Object.fromEntries((d.appRoles || []).map(r => [r.id, r.value])), scopes:Object.fromEntries((d.oauth2PermissionScopes || []).map(s => [s.id, s.value]))});
-        const asg = await gAll(`/v1.0/servicePrincipals/${sp.id}/appRoleAssignedTo?$top=999`);
-        asg.forEach(x => { if(ourSp.has(x.principalId)) raw.assignments.push({principalId:x.principalId, resourceId:x.resourceId, appRoleId:x.appRoleId}); });
-      }
-      return `${raw.assignments.length} · ${raw.resources.length} API`;
+      const ids = [...ourSp];
+      const res = await gBatch(ids.map(id => `/servicePrincipals/${id}/appRoleAssignments?$select=principalId,resourceId,appRoleId&$top=999`), (d, n) => prog("Perm", "run", `${d}/${n}`));
+      res.forEach(r => { if(r?.status === 200) (r.body.value || []).forEach(x => raw.assignments.push({principalId:x.principalId, resourceId:x.resourceId, appRoleId:x.appRoleId})); });
+      return raw.assignments.length;
     });
     await soft("Grant", "grantOk", "grantErr", async () => {
-      const all = await gAll("/v1.0/oauth2PermissionGrants?$top=999", n => prog("Grant", "run", n));
-      raw.grants = all.filter(x => !ourSp.size || ourSp.has(x.clientId)).map(x => ({clientId:x.clientId, resourceId:x.resourceId, scope:x.scope, consentType:x.consentType}));
+      const ids = [...ourSp];
+      const res = await gBatch(ids.map(id => `/servicePrincipals/${id}/oauth2PermissionGrants?$top=999`), (d, n) => prog("Grant", "run", `${d}/${n}`));
+      res.forEach(r => { if(r?.status === 200) (r.body.value || []).forEach(x => raw.grants.push({clientId:x.clientId, resourceId:x.resourceId, scope:x.scope, consentType:x.consentType})); });
       return raw.grants.length;
+    });
+    await soft("Api", "apiOk", "apiErr", async () => {
+      const spByApp = new Map(raw.sps.map(s => [(s.appId || "").toLowerCase(), s]));
+      const rids = new Set([...raw.assignments.map(x => x.resourceId), ...raw.grants.map(x => x.resourceId)]);
+      Object.values(RES).concat(raw.apps.flatMap(a => (a.requiredResourceAccess || []).map(r => (r.resourceAppId || "").toLowerCase()))).forEach(ap => { const sp = spByApp.get(ap); if(sp) rids.add(sp.id); });
+      const list = [...rids];
+      const res = await gBatch(list.map(id => `/servicePrincipals/${id}?$select=id,appId,displayName,appRoles,oauth2PermissionScopes`), (d, n) => prog("Api", "run", `${d}/${n}`));
+      res.forEach(r => { if(r?.status === 200){ const d = r.body; raw.resources.push({id:d.id, appId:d.appId, name:d.displayName, roles:Object.fromEntries((d.appRoles || []).map(x => [x.id, x.value])), scopes:Object.fromEntries((d.oauth2PermissionScopes || []).map(x => [x.id, x.value]))}); } });
+      return raw.resources.length + " API";
+    });
+    await soft("Role", "roleOk", "roleErr", async () => {
+      const defs = await gAll("/v1.0/roleManagement/directory/roleDefinitions?$select=id,displayName,templateId");
+      const res = await gBatch(defs.map(d => `/roleManagement/directory/roleAssignments?$filter=${encodeURIComponent(`roleDefinitionId eq '${d.id}'`)}&$select=principalId,directoryScopeId,roleDefinitionId`), (d, n) => prog("Role", "run", `${d}/${n}`));
+      const name = new Map(defs.map(d => [d.id, d.displayName]));
+      res.forEach(r => { if(r?.status === 200) (r.body.value || []).forEach(x => { if(ourSp.has(x.principalId)) raw.roles.push({principalId:x.principalId, role:name.get(x.roleDefinitionId) || x.roleDefinitionId, scope:x.directoryScopeId || "/"}); }); });
+      return raw.roles.length;
+    });
+    await soft("Fic", "ficOk", "ficErr", async () => {
+      const res = await gBatch(raw.apps.map(a => `/applications/${a.id}/federatedIdentityCredentials?$select=name,issuer,subject,audiences`), (d, n) => prog("Fic", "run", `${d}/${n}`));
+      let n = 0; res.forEach((r, k) => { if(r?.status === 200 && r.body.value?.length){ raw.fics[raw.apps[k].id] = r.body.value.map(f => ({name:f.name, issuer:f.issuer, subject:f.subject})); n += r.body.value.length; } });
+      return n;
     });
 
     S.raw = raw; evaluate(); loadBase(); histPush(snapshot()); renderAll(); go("overview");
@@ -1033,6 +1110,16 @@ async function demoVerify(a){
   const ok = VF_TYPES.reduce((m, x) => m + by[x].ok, 0), fail = VF_TYPES.reduce((m, x) => m + by[x].fail, 0);
   return {at:new Date().toISOString(), by, ok, fail, truncated:false, state:ok ? "active" : fail ? "fail" : "none"};
 }
+function cfgHtml(a){
+  const c = a.cfg; if(!c) return "";
+  const uriTag = u => c.wildcard.includes(u) || c.http.includes(u) ? `<span class="tag bad">${esc(t("tRedirect"))}</span>` : c.takeover.includes(u) ? `<span class="tag warn">${esc(t("tTakeover"))}</span>` : "";
+  return `<div><h3>${esc(t("flyCfg"))}</h3><table class="mini"><tbody>
+    <tr><td>${esc(t("cfgImplicit"))}</td><td>${c.implicitAT ? pill("st-inv", t("cfgOnAT")) : c.implicitId ? pill("st-na", t("cfgOnId")) : pill("st-pass", t("cfgOff"))}</td></tr>
+    <tr><td>${esc(t("cfgPublic"))}</td><td>${c.publicClient ? pill("st-inv", t("cfgOn")) : pill("st-pass", t("cfgOff"))}</td></tr>
+    <tr><td>${esc(t("cfgUris"))} (${c.uris.length})</td><td>${c.uris.length ? c.uris.slice(0, 15).map(u => `<div style="font-family:var(--mono);font-size:12px;overflow-wrap:anywhere">${esc(u)} ${uriTag(u)}</div>`).join("") : `<span class="muted">${esc(t("none"))}</span>`}</td></tr>
+    <tr><td>${esc(t("cfgFic"))} (${a.fics.length})</td><td>${a.fics.length ? a.fics.map(f => `<div class="small"><b>${esc(f.name)}</b> · <span class="muted">${esc(f.issuer)}</span><div style="font-family:var(--mono);font-size:12px;overflow-wrap:anywhere">${esc(f.subject)}</div></div>`).join("") : `<span class="muted">${esc(t("none"))}</span>`}</td></tr>
+  </tbody></table></div>`;
+}
 function verifyHtml(a){
   const v = a.vf;
   const head = `<h3>${esc(t("vfTitle"))}</h3><p class="muted small" style="margin:0 0 8px">${esc(t("vfSub"))}</p>`;
@@ -1112,6 +1199,7 @@ function evaluate(){
   const resById = new Map(R.resources.map(r => [r.id, r])), resByApp = new Map(R.resources.map(r => [(r.appId || "").toLowerCase(), r]));
   const asgBy = new Map(); R.assignments.forEach(x => (asgBy.get(x.principalId) || asgBy.set(x.principalId, []).get(x.principalId)).push(x));
   const grBy = new Map(); R.grants.forEach(x => (grBy.get(x.clientId) || grBy.set(x.clientId, []).get(x.clientId)).push(x));
+  const roBy = new Map(); (R.roles || []).forEach(x => (roBy.get(x.principalId) || roBy.set(x.principalId, []).get(x.principalId)).push(x));
   const maxD = arr => arr.filter(Boolean).sort().pop() || null;
 
   S.apps = R.apps.map(a => {
@@ -1141,6 +1229,13 @@ function evaluate(){
     const valid = creds.filter(c => c.status !== "expired");
     const validSecrets = valid.filter(c => c.type === "secret").length, validCerts = valid.filter(c => c.type === "cert").length;
     const expired = creds.filter(c => c.status === "expired").length;
+    const fics = R.fics?.[a.id] || [];
+    const web = a.web || {}, uris = [...(web.redirectUris || []), ...(a.spa?.redirectUris || []), ...(a.publicClient?.redirectUris || [])];
+    const cfg = {
+      implicitAT: !!web.implicitGrantSettings?.enableAccessTokenIssuance, implicitId: !!web.implicitGrantSettings?.enableIdTokenIssuance,
+      publicClient: a.isFallbackPublicClient === true, uris,
+      http: uris.filter(u => /^http:\/\//i.test(u) && !/^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i.test(u)),
+      wildcard: uris.filter(u => u.includes("*")), takeover: uris.filter(u => TAKEOVER.test(u))};
 
     /* owners */
     const owners = (a.owners || []).map(o => ({name:o.displayName || o.userPrincipalName || o.id, upn:o.userPrincipalName || "",
@@ -1170,11 +1265,13 @@ function evaluate(){
         if(!findP(kind, res, v)) perms.push({kind, res, value:v, level:permLevel(v, kind), granted:false});
       });
     });
-    perms.sort((p, q) => q.level - p.level || (p.kind === "app" ? -1 : 1) || p.value.localeCompare(q.value));
+    if(sp) (roBy.get(sp.id) || []).forEach(x => perms.push({kind:"role", res:x.scope === "/" ? "Entra ID" : "Entra ID (" + x.scope + ")", value:x.role, level:x.scope === "/" ? roleLevel(x.role) : Math.max(1, roleLevel(x.role) - 1), granted:true, consent:"admin"}));
+    perms.sort((p, q) => q.level - p.level || (p.kind === "role" ? -1 : q.kind === "role" ? 1 : p.kind === "app" ? -1 : 1) || p.value.localeCompare(q.value));
     const permKnown = R.permOk && (R.grantOk || true);
     const counted = perms.filter(p => p.granted || !R.permOk);
     const tier = counted.reduce((m, p) => Math.max(m, p.level), 0);
     const appPerms = counted.filter(p => p.kind === "app");
+    const rolePerms = counted.filter(p => p.kind === "role");
     const delPerms = counted.filter(p => p.kind === "del");
     const appOnly = appPerms.length > 0, delegated = delPerms.length > 0;
     const kind = appOnly && delegated ? "both" : appOnly ? "app" : delegated ? "del" : "";
@@ -1185,10 +1282,16 @@ function evaluate(){
     /* sign-in */
     const sign = !R.signOk ? "unknown" : !last ? "never" : daysSince(last) > inact ? "stale" : "active";
     const unused = sign === "never" || sign === "stale";
-    const credState = validSecrets ? "active" : validCerts ? "cert" : expired ? "expired" : "none";
+    const credState = validSecrets ? "active" : validCerts ? "cert" : fics.length ? "fic" : expired ? "expired" : "none";
 
     const flags = [];
-    if(unused && valid.length) flags.push("risk");
+    if(unused && (valid.length || fics.length)) flags.push("risk");
+    if(rolePerms.length) flags.push("role");
+    if(fics.length) flags.push("fic");
+    if(cfg.http.length || cfg.wildcard.length) flags.push("redirect");
+    if(cfg.takeover.length) flags.push("takeover");
+    if(cfg.implicitAT) flags.push("implicit");
+    if(cfg.publicClient) flags.push("public");
     if(ownerState === "none") flags.push("noOwner");
     if(ownerState === "disabled") flags.push("disOwner");
     if(unrestricted) flags.push("unres");
@@ -1204,14 +1307,15 @@ function evaluate(){
     if(sign === "unknown") verdict = "unknown";
     else if(unused && !recent && vf?.state === "active") verdict = "review";
     else if(unused && !recent) verdict = "delete";
-    else if(flags.some(f => ["noOwner", "disOwner", "expired", "unusedCred", "soon", "long", "risk"].includes(f)) || (unrestricted && tier >= 2)) verdict = "review";
+    else if(flags.some(f => ["noOwner", "disOwner", "expired", "unusedCred", "soon", "long", "risk", "role", "redirect", "takeover", "implicit", "public"].includes(f)) || (unrestricted && tier >= 2)) verdict = "review";
     else verdict = "ok";
 
     const signShown = unused && recent && sign === "never" ? "recent" : sign;
     const ipInfo = R.ips?.[a.appId] || null;
     const app = {id:a.id, appId:a.appId, name:a.displayName || "(no name)", created:a.createdDateTime, age, audience:a.signInAudience || "", publisher:a.publisherDomain || "",
       acts, last, sign, signShown, recent, owners, ownerState, creds, validSecrets, validCerts, expired, credState, flags, verdict,
-      spId:sp?.id || "", perms, tier, appPerms, delPerms, appOnly, delegated, kind, asgReq, unrestricted, ipInfo, vf};
+      spId:sp?.id || "", perms, tier, appPerms, delPerms, rolePerms, appOnly, delegated, kind, asgReq, unrestricted, ipInfo, vf, fics, cfg};
+    if(tier >= 3 && owners.some(o => !o.isSp && !o.disabled)) app.flags.push("ownerEsc");
     app.recs = recommend(app, inact);
     app.risk = app.recs.reduce((m, r) => Math.max(m, r.sev), 0);
     app.prio = -(app.risk * 100 + app.tier * 10 + (verdict === "delete" ? 5 : 0)) * 1e5 - Math.min(daysSince(last) ?? age, 99999) / 1e5;
@@ -1233,11 +1337,22 @@ function recommend(a, inact){
       const lst = strong.slice(0, 6).map(p => p.value + (altOf(p.value) ? " → " + t(altOf(p.value)) : "")).join(" ; ");
       add("reducePerms", strong.some(p => p.level === 4) ? 4 : 3, lst);
     }
+    if(a.rolePerms.length){
+      const top = a.rolePerms[0];
+      add("reviewRole", top.level >= 4 ? 4 : 3, a.rolePerms.map(p => p.value).join(", "));
+    }
+    if(a.flags.includes("ownerEsc")) add("ownerEsc", a.tier >= 4 ? 3 : 2, a.owners.filter(o => !o.isSp && !o.disabled).length);
+    if(a.cfg.wildcard.length) add("redirectWildcard", 3, a.cfg.wildcard.slice(0, 3).join(", "));
+    if(a.cfg.http.length) add("redirectHttp", 3, a.cfg.http.slice(0, 3).join(", "));
+    if(a.cfg.takeover.length) add("redirectTakeover", 2, a.cfg.takeover.slice(0, 3).join(", "));
+    if(a.cfg.implicitAT) add("implicit", a.tier >= 3 ? 3 : 2);
+    if(a.cfg.publicClient) add("publicClient", a.tier >= 3 ? 3 : 2);
     if(a.appOnly){
       if(a.flags.includes("multi")){}
       else if(a.ipInfo && !a.ipInfo.err && a.ipInfo.ranges.length) add("caWidIps", hi ? 3 : 2, a.ipInfo.ips.filter(x => x.ok > 0).length);
       else add("caWid", hi ? 3 : 2);
       if(a.validSecrets) add("certInstead", hi ? 3 : 2);
+      if(a.fics.length) add("ficReview", hi ? 2 : 1, a.fics.map(f => f.subject).slice(0, 3).join(" ; "));
     }
     if(a.unrestricted) add("assignReq", hi ? 3 : 2);
     const adminDel = a.delPerms.filter(p => p.granted && p.consent === "admin" && p.level >= 3);
@@ -1278,14 +1393,15 @@ function credCell(a){
   const bad = a.sign === "never" || a.sign === "stale", parts = [];
   if(a.validSecrets) parts.push(`<span class="tag ${bad ? "bad" : "ok"}">${esc(t("fSecrets", a.validSecrets))}</span>`);
   if(a.validCerts) parts.push(`<span class="tag ${bad ? "bad" : "ok"}">${esc(t("fCerts", a.validCerts))}</span>`);
+  if(a.fics?.length) parts.push(`<span class="tag ${bad ? "bad" : "ok"}">${esc(t("fFics", a.fics.length))}</span>`);
   if(a.expired) parts.push(`<span class="tag">${esc(t("fExpired", a.expired))}</span>`);
   return parts.join(" ") || `<span class="muted">${esc(t("none"))}</span>`;
 }
-const permTag = p => `<span class="tag lv-${LVN[p.level]}" title="${esc(p.res)}">${esc((p.kind === "app" ? "⚙ " : "👤 ") + p.value)}</span>`;
-const topPerms = (a, n = 3) => { const L = [...a.appPerms, ...a.delPerms].sort((p, q) => q.level - p.level || (p.kind === "app" ? -1 : 1)); return L.length ? `<div class="perms">${L.slice(0, n).map(permTag).join("")}${L.length > n ? `<span class="muted small">+${L.length - n}</span>` : ""}</div>` : `<span class="muted">${esc(t("none"))}</span>`; };
+const permTag = p => `<span class="tag lv-${LVN[p.level]}" title="${esc(p.res)}">${esc((p.kind === "role" ? "🛡 " : p.kind === "app" ? "⚙ " : "👤 ") + p.value)}</span>`;
+const topPerms = (a, n = 3) => { const L = [...a.rolePerms, ...a.appPerms, ...a.delPerms].sort((p, q) => q.level - p.level || (p.kind === "role" ? -1 : p.kind === "app" ? -1 : 1)); return L.length ? `<div class="perms">${L.slice(0, n).map(permTag).join("")}${L.length > n ? `<span class="muted small">+${L.length - n}</span>` : ""}</div>` : `<span class="muted">${esc(t("none"))}</span>`; };
 const asgCell = a => a.asgReq === null ? `<span class="muted">${esc(t("asg_na"))}</span>` : a.asgReq ? pill("st-pass", t("asg_yes")) : pill(a.unrestricted ? "st-inv" : "st-na", t("asg_no"));
-const FLAGTAG = {logActive:"bad", logFail:"warn", logNone:"ok", risk:"bad", noOwner:"bad", disOwner:"warn", unres:"warn", expired:"", unusedCred:"warn", soon:"warn", long:"warn", multi:""};
-const FLAGTXT = {logActive:"tLogActive", logFail:"tLogFail", logNone:"tLogNone", risk:"tRisk", noOwner:"tNoOwner", disOwner:"tDisOwner", unres:"tUnres", expired:"tExpired", unusedCred:"tUnusedCred", soon:"tSoon", long:"tLong", multi:"tMulti"};
+const FLAGTAG = {role:"bad", ownerEsc:"warn", fic:"", redirect:"bad", takeover:"warn", implicit:"warn", public:"warn", logActive:"bad", logFail:"warn", logNone:"ok", risk:"bad", noOwner:"bad", disOwner:"warn", unres:"warn", expired:"", unusedCred:"warn", soon:"warn", long:"warn", multi:""};
+const FLAGTXT = {role:"tRole", ownerEsc:"tOwnerEsc", fic:"tFic", redirect:"tRedirect", takeover:"tTakeover", implicit:"tImplicit", public:"tPublic", logActive:"tLogActive", logFail:"tLogFail", logNone:"tLogNone", risk:"tRisk", noOwner:"tNoOwner", disOwner:"tDisOwner", unres:"tUnres", expired:"tExpired", unusedCred:"tUnusedCred", soon:"tSoon", long:"tLong", multi:"tMulti"};
 const kindTags = a => (a.appOnly ? `<span class="tag ${a.tier >= 3 ? "bad" : ""}">${esc(t("tAppOnly"))}</span>` : "") + (a.delegated ? `<span class="tag">${esc(t("tDel"))}</span>` : "");
 const flagsHtml = a => kindTags(a) + a.flags.map(f => `<span class="tag ${FLAGTAG[f]}">${esc(t(FLAGTXT[f]))}</span>`).join("");
 const recoCell = a => { const r = a.recs[0]; return r ? `<div class="reco">${sevPill(r.sev)}${esc(t("rs_" + r.key))}</div>` : `<div class="reco">${sevPill(0)}</div>`; };
@@ -1347,7 +1463,7 @@ function renderOverview(){
     dist("dTier", "tier", [4, 3, 2, 1, 0].map(v => ({v, l:t("l_" + LVN[v]), n:A.filter(a => a.tier === v).length, c:LC[v]}))) +
     dist("dSign", "sign", ["active", "stale", "never", "recent", "unknown"].map(v => ({v, l:t("s_" + v), n:cnt("signShown", v), c:{active:"var(--pass)", stale:"var(--part)", never:"var(--fail)", recent:"var(--inv)", unknown:"var(--na)"}[v]})).filter(x => x.n || x.v !== "unknown")) +
     dist("dOwner", "owner", ["ok", "disabled", "none"].map(v => ({v, l:t("o_" + v), n:cnt("ownerState", v), c:{ok:"var(--pass)", disabled:"var(--inv)", none:"var(--fail)"}[v]}))) +
-    dist("dCred", "cred", ["active", "cert", "expired", "none"].map(v => ({v, l:t("c_" + v), n:cnt("credState", v), c:{active:"var(--brand)", cert:"#7b4fd6", expired:"var(--na)", none:"var(--stroke-2)"}[v]})));
+    dist("dCred", "cred", ["active", "cert", "fic", "expired", "none"].map(v => ({v, l:t("c_" + v), n:cnt("credState", v), c:{active:"var(--brand)", cert:"#7b4fd6", fic:"#0f8a8a", expired:"var(--na)", none:"var(--stroke-2)"}[v]})).filter(x => x.n || x.v !== "fic"));
   $$("#dists .legend button").forEach(b => b.onclick = () => openApps({[b.dataset.f]:b.dataset.v}));
 
   const top = byRisk(A.filter(a => a.risk >= 3)).slice(0, 10);
@@ -1370,7 +1486,7 @@ function syncFilterUI(){
   opts("#fTier", "allTier", [4, 3, 2, 1, 0].map(v => [String(v), t("l_" + LVN[v])]), S.f.tier === "" ? "" : String(S.f.tier));
   opts("#fSign", "allSign", ["active", "stale", "never", "recent", "unknown"].map(v => [v, t("s_" + v)]), S.f.sign);
   opts("#fOwner", "allOwner", [["ok", t("o_ok")], ["noactive", t("kOwner")], ["none", t("o_none")], ["disabled", t("o_disabled")]], S.f.owner);
-  opts("#fCred", "allCred", [["active", t("c_active")], ["cert", t("c_cert")], ["expired", t("c_expired")], ["none", t("c_none")], ["soon", t("c_soon")], ["risk", t("tRisk")], ["unres", t("tUnres")]],
+  opts("#fCred", "allCred", [["active", t("c_active")], ["cert", t("c_cert")], ["fic", t("c_fic")], ["expired", t("c_expired")], ["none", t("c_none")], ["soon", t("c_soon")], ["risk", t("tRisk")], ["unres", t("tUnres")]],
     S.f.flag === "risk" || S.f.flag === "unres" ? S.f.flag : (S.f.cred || ""));
 }
 function filtered(){
@@ -1450,7 +1566,7 @@ function openFly(id){
   $("#flyTitle").textContent = a.name; $("#flySub").textContent = a.appId;
   const acts = [["sAny", a.acts.any], ["sDelClient", a.acts.delClient], ["sDelRes", a.acts.delRes], ["sAppClient", a.acts.appClient], ["sAppRes", a.acts.appRes]];
   const credRows = [...a.creds].sort((x, y) => (y.end || "").localeCompare(x.end || "")).map(c => `<tr><td>${esc(t(c.type))}</td><td>${esc(c.name || "—")}</td><td>${esc(fmtDate(c.end))}</td><td>${c.lastUsed === undefined ? "—" : esc(c.lastUsed ? agoTxt(c.lastUsed) : t("never"))}</td><td>${pill(c.status === "expired" ? "st-na" : c.status === "soon" ? "st-inv" : (a.sign === "never" || a.sign === "stale") ? "st-fail" : "st-pass", t("cr_" + c.status))}</td></tr>`).join("");
-  const permRows = a.perms.map(p => `<tr class="${p.granted || !S.raw.permOk ? "" : "muted"}"><td>${esc(p.kind === "app" ? t("pApp") : t("pDel"))}</td><td>${esc(p.res)}</td><td><b>${esc(p.value)}</b>${p.kind === "app" && altOf(p.value) && p.level >= 3 ? `<div class="muted small">→ ${esc(t(altOf(p.value)))}</div>` : ""}</td><td>${lvPill(p.level)}</td><td class="small">${!p.granted && S.raw.permOk ? esc(t("pRequested")) : p.consent === "admin" ? esc(t("pAdmin")) : p.consent === "user" ? esc(t("pUsers", p.users)) : ""}</td></tr>`).join("");
+  const permRows = a.perms.map(p => `<tr class="${p.granted || !S.raw.permOk ? "" : "muted"}"><td>${esc(p.kind === "role" ? t("pRole") : p.kind === "app" ? t("pApp") : t("pDel"))}</td><td>${esc(p.res)}</td><td><b>${esc(p.value)}</b>${p.kind === "app" && altOf(p.value) && p.level >= 3 ? `<div class="muted small">→ ${esc(t(altOf(p.value)))}</div>` : ""}</td><td>${lvPill(p.level)}</td><td class="small">${!p.granted && S.raw.permOk ? esc(t("pRequested")) : p.consent === "admin" ? esc(t("pAdmin")) : p.consent === "user" ? esc(t("pUsers", p.users)) : ""}</td></tr>`).join("");
   const portal = `https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/${encodeURIComponent(a.appId)}`;
   const ip = a.ipInfo;
   const warnHtml = `<div><b>${esc(t("wTitle"))}</b><ul class="todo" style="margin-top:6px">${caWarnings(a).map(w => `<li>${sevPill(w.lv)}<span>${esc(w.txt)}</span></li>`).join("")}</ul></div>`;
@@ -1476,6 +1592,7 @@ function openFly(id){
       <div><b>${esc(t("fAudience"))}</b>${esc(a.audience)}</div>
     </div><div class="meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${flagsHtml(a)}</div></div>
     <div><h3>${esc(t("flyPerms"))} (${a.perms.length})</h3>${a.perms.length ? `<div class="scroll"><table class="mini"><thead><tr><th>${esc(t("pType"))}</th><th>${esc(t("pRes"))}</th><th>${esc(t("pPerm"))}</th><th>${esc(t("pLevel"))}</th><th>${esc(t("pConsent"))}</th></tr></thead><tbody>${permRows}</tbody></table></div>` : `<span class="muted">${esc(t("pNone"))}</span>`}</div>
+    ${cfgHtml(a)}
     ${vfHtml}
     ${widHtml}
     <div><h3>${esc(t("flySign"))}</h3>${S.raw.signOk ? `<table class="mini"><tbody>${acts.map(([l, d]) => `<tr><td>${esc(t(l))}</td><td>${esc(d ? fmtDate(d) : "—")}</td><td class="muted">${d ? esc(agoTxt(d)) : ""}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">${esc(t("r_unknown"))}</p>`}</div>
@@ -1556,7 +1673,7 @@ function csvOf(L){
   const pl = (a, kind) => a.perms.filter(p => p.kind === kind && (p.granted || !S.raw.permOk)).map(p => `${p.res}: ${p.value} [${LVN[p.level].toUpperCase()}]${kind === "del" && p.consent ? " (" + (p.consent === "admin" ? "admin" : p.users + " users") + ")" : ""}`).join(", ");
   const head = ["DisplayName", "AppId", "ObjectId", "ServicePrincipalId", "Criticality", "Sensitivity", "Verdict", "Type", "ApplicationPermissions", "DelegatedPermissions", "RequestedNotGranted",
     "AssignmentRequired", "UnrestrictedUsers", "SignInState", "LastSignIn", "LastDelegatedSignIn", "LastAppOnlySignIn", "Created", "Audience", "Owners", "OwnerState",
-    "ValidSecrets", "ValidCertificates", "ExpiredCredentials", "NextExpiry", "CredentialsDetail", "KnownIPs", "ProposedRanges", "CAWarnings", "LogCheck30d", "Flags", "Recommendations"];
+    "ValidSecrets", "ValidCertificates", "ExpiredCredentials", "NextExpiry", "CredentialsDetail", "KnownIPs", "ProposedRanges", "CAWarnings", "LogCheck30d", "EntraRoles", "FederatedCredentials", "RedirectUris", "ImplicitAccessToken", "PublicClient", "Flags", "Recommendations"];
   const rows = L.map(a => [a.name, a.appId, a.id, a.spId, SEVN[a.risk], LVN[a.tier], a.verdict, a.kind, pl(a, "app"), pl(a, "del"),
     S.raw.permOk ? a.perms.filter(p => !p.granted).map(p => `${p.res}: ${p.value}`).join(", ") : "",
     a.asgReq === null ? "" : a.asgReq, a.unrestricted, a.sign, a.last || "", maxOf(a.acts.delClient, a.acts.delRes), maxOf(a.acts.appClient, a.acts.appRes), a.created || "", a.audience,
@@ -1566,6 +1683,7 @@ function csvOf(L){
     a.ipInfo && !a.ipInfo.err ? a.ipInfo.ips.map(x => x.ip).join(" ") : "", a.ipInfo && !a.ipInfo.err ? a.ipInfo.ranges.map(r => r.cidr).join(" ") : "",
     a.appOnly ? caWarnings(a, false).map(w => w.txt).join(" | ") : "",
     a.vf && !a.vf.err ? `${a.vf.state} (ok ${a.vf.ok}, failed ${a.vf.fail})` : "",
+    a.rolePerms.map(p => p.value + (p.res !== "Entra ID" ? " " + p.res : "")).join(", "), a.fics.map(f => `${f.issuer} | ${f.subject}`).join("; "), a.cfg.uris.join(" "), a.cfg.implicitAT, a.cfg.publicClient,
     a.flags.join("|"), a.recs.map(r => `[${SEVN[r.sev].toUpperCase()}] ${r.txt}`).join(" | ")]);
   return "﻿" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
 }
@@ -1575,14 +1693,15 @@ $$("[data-csvall]").forEach(b => b.onclick = () => download(`entra-apps-full-${s
 
 
 /* ---------------- KPI tracking: snapshots, baseline, comparison ---------------- */
-const KPIS = ["total", "sens", "crit", "risk", "del", "noOwner", "unres", "appHigh", "secrets", "expired", "long", "certs"];
+const KPIS = ["total", "sens", "crit", "risk", "del", "noOwner", "unres", "appHigh", "roles", "config", "secrets", "expired", "long", "certs"];
 const minApp = a => ({appId:a.appId, name:a.name, tier:a.tier, risk:a.risk, verdict:a.verdict, ownerState:a.ownerState, unrestricted:a.unrestricted,
   appMax:a.appPerms.reduce((m, p) => Math.max(m, p.level), 0), validSecrets:a.validSecrets, validCerts:a.validCerts, expired:a.expired,
-  long:a.creds.filter(c => c.long && c.status !== "expired").length, flags:a.flags});
+  long:a.creds.filter(c => c.long && c.status !== "expired").length, flags:a.flags, roleMax:a.rolePerms.reduce((m, p) => Math.max(m, p.level), 0)});
 function kpisOf(L){
   const n = f => L.filter(f).length, sum = k => L.reduce((m, a) => m + (a[k] || 0), 0);
   return {total:L.length, sens:n(a => a.tier >= 3), crit:n(a => a.risk >= 4), risk:n(a => (a.flags || []).includes("risk")), del:n(a => a.verdict === "delete"),
-    noOwner:n(a => a.ownerState !== "ok"), unres:n(a => a.unrestricted), appHigh:n(a => a.appMax >= 3), secrets:sum("validSecrets"), certs:sum("validCerts"), expired:sum("expired"), long:sum("long")};
+    noOwner:n(a => a.ownerState !== "ok"), unres:n(a => a.unrestricted), appHigh:n(a => a.appMax >= 3), secrets:sum("validSecrets"), certs:sum("validCerts"), expired:sum("expired"), long:sum("long"),
+    roles:n(a => (a.roleMax || 0) >= 3), config:n(a => (a.flags || []).some(f => ["redirect", "takeover", "implicit", "public"].includes(f)))};
 }
 const tenantKey = () => S.raw?.demo ? "demo" : (S.raw?.org?.id || SS.get("tok")?.tid || S.cfg.tenant || "tenant");
 function snapshot(){
@@ -1611,6 +1730,7 @@ function compare(){
   return {now, base:B.kpis, gone:B.apps.filter(a => !nm.has(a.appId)), added:S.apps.filter(a => !bm.has(a.appId)),
     better:S.apps.filter(a => bm.has(a.appId) && a.risk < bm.get(a.appId).risk), worse:S.apps.filter(a => bm.has(a.appId) && a.risk > bm.get(a.appId).risk)};
 }
+const n0 = (now, k) => now[k]; // KPI absent from an older snapshot: shown as unchanged
 const deltaTxt = (b, n) => { const d = n - b; if(!d) return "="; const pc = b ? Math.round(d / b * 100) : null; return (d > 0 ? "+" : "−") + Math.abs(d) + (pc === null ? "" : ` (${d > 0 ? "+" : "−"}${Math.abs(pc)} %)`); };
 function renderKpi(){
   if(!S.raw) return;
@@ -1621,7 +1741,7 @@ function renderKpi(){
   $("#kpCmpSub").textContent = C ? t("kpCmpSub", fmtDate(S.base.takenAt), fmtDate(S.raw.scannedAt)) : t("kpCmpNone");
   const max = Math.max(1, ...KPIS.map(k => Math.max(now[k], C ? C.base[k] : 0)));
   $("#kpTbl").innerHTML = `<thead><tr><th>${esc(t("kpKpi"))}</th>${C ? `<th>${esc(t("kpBaseCol"))}</th>` : ""}<th>${esc(t("kpNowCol"))}</th>${C ? `<th>${esc(t("kpDelta"))}</th><th class="hide-sm" style="width:30%"></th>` : ""}</tr></thead><tbody>` +
-    KPIS.map(k => { const b = C ? C.base[k] : 0, n = now[k], d = n - b, good = k === "total" || k === "certs" ? 0 : -Math.sign(d);
+    KPIS.map(k => { const b = C ? (C.base[k] ?? n0(now, k)) : 0, n = now[k], d = n - b, good = k === "total" || k === "certs" ? 0 : -Math.sign(d);
       return `<tr style="cursor:default"><td class="t">${esc(t("k_" + k))}</td>${C ? `<td class="num">${b}</td>` : ""}<td class="num"><b>${n}</b></td>${C ? `<td>${d ? pill(good > 0 ? "st-pass" : good < 0 ? "st-fail" : "st-na", deltaTxt(b, n)) : `<span class="muted">=</span>`}</td>
         <td class="hide-sm"><div class="stack" style="margin:2px 0;height:6px"><span style="--c:var(--stroke-2);width:${b / max * 100}%"></span></div><div class="stack" style="margin:2px 0;height:6px"><span style="--c:var(--brand);width:${n / max * 100}%"></span></div></td>` : ""}</tr>`; }).join("") + "</tbody>";
   const list = (title, L, isNow) => `<div class="card"><h2>${esc(t(title))} · ${L.length}</h2>${L.length ? `<table class="mini"><tbody>${L.slice(0, 12).map(a => `<tr ${isNow ? `data-id="${a.id}" style="cursor:pointer"` : ""}><td>${esc(a.name)}</td><td>${sevPill(a.risk)}</td></tr>`).join("")}</tbody></table>${L.length > 12 ? `<p class="muted small">${esc(t("clMore", L.length - 12))}</p>` : ""}` : `<p class="muted">${esc(t("kpEmpty"))}</p>`}</div>`;
@@ -1632,7 +1752,7 @@ $("#snapBtn").onclick = () => { const sn = snapshot(); histPush(sn); download(`e
 $("#kpiCsvBtn").onclick = () => {
   const C = compare(), now = C ? C.now : kpisOf(S.apps.map(minApp)), q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const head = C ? ["KPI", "Baseline " + S.base.takenAt.slice(0, 10), "Now " + S.raw.scannedAt.slice(0, 10), "Change", "Change %"] : ["KPI", "Now " + S.raw.scannedAt.slice(0, 10)];
-  const rows = KPIS.map(k => C ? [t("k_" + k), C.base[k], now[k], now[k] - C.base[k], C.base[k] ? Math.round((now[k] - C.base[k]) / C.base[k] * 100) : ""] : [t("k_" + k), now[k]]);
+  const rows = KPIS.map(k => C ? [t("k_" + k), C.base[k] ?? "", now[k], C.base[k] == null ? "" : now[k] - C.base[k], C.base[k] ? Math.round((now[k] - C.base[k]) / C.base[k] * 100) : ""] : [t("k_" + k), now[k]]);
   download(`entra-app-cleanup-kpis-${stamp()}.csv`, "﻿" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n"), "text/csv");
 };
 $("#baseFile").onchange = async e => {
@@ -1646,7 +1766,9 @@ $("#baseClear").onclick = () => { S.base = null; try{ localStorage.removeItem("e
 /* ---------------- PowerPoint deck ---------------- */
 function loadLib(){ return new Promise((res, rej) => { if(window.PptxGenJS) return res();
   const urls = ["https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js", "https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"];
-  const next = i => { if(i >= urls.length) return rej(new Error("lib")); const s = document.createElement("script"); s.src = urls[i]; s.onload = () => window.PptxGenJS ? res() : next(i + 1); s.onerror = () => next(i + 1); document.head.appendChild(s); };
+  // Subresource Integrity: the browser refuses the file if a single byte differs from the published pptxgenjs 3.12.0 bundle
+  const next = i => { if(i >= urls.length) return rej(new Error("lib")); const s = document.createElement("script"); s.src = urls[i];
+    s.integrity = "sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ"; s.crossOrigin = "anonymous"; s.referrerPolicy = "no-referrer"; s.onload = () => window.PptxGenJS ? res() : next(i + 1); s.onerror = () => next(i + 1); document.head.appendChild(s); };
   next(0); }); }
 /* The deck is always in English, whatever the page language: recommendations are re-evaluated in English, then restored. */
 async function deck(){
@@ -1713,7 +1835,7 @@ async function buildDeck(){
   if(C){
     s = p.addSlide(); frame(s, t("dProg"), t("dProgSub", fmtDate(S.base.takenAt), fmtDate(S.raw.scannedAt)));
     const rows = [hdr([t("kpKpi"), t("kpBaseCol"), t("kpNowCol"), t("kpDelta")])];
-    KPIS.forEach(k => { const b = C.base[k], nw = C.now[k], d = nw - b, good = k === "total" || k === "certs" ? 0 : -Math.sign(d);
+    KPIS.forEach(k => { const b = C.base[k] ?? C.now[k], nw = C.now[k], d = nw - b, good = k === "total" || k === "certs" ? 0 : -Math.sign(d);
       rows.push([{text:t("k_" + k), options:{bold:true}}, {text:String(b), options:{align:"center"}}, {text:String(nw), options:{align:"center", bold:true}},
         {text:d ? deltaTxt(b, nw) : "=", options:{align:"center", bold:true, color:good > 0 ? "107C10" : good < 0 ? "C50F1F" : MUTE}}]); });
     s.addTable(rows, {x:0.5, y:1.35, w:7.6, colW:[3.9, 1.0, 1.0, 1.7], fontFace:FONT, fontSize:10.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, valign:"middle", rowH:0.38, autoPage:false});
@@ -1760,9 +1882,9 @@ async function buildDeck(){
       [t("cCreds"), [a.validSecrets ? t("fSecrets", a.validSecrets) : "", a.validCerts ? t("fCerts", a.validCerts) : "", a.expired ? t("fExpired", a.expired) : ""].filter(Boolean).join(", ") || t("none")],
       [t("fAudience"), a.audience]];
     s.addTable(facts.map(([k, v]) => [{text:k, options:{bold:true, color:MUTE}}, {text:v}]), {x:0.5, y:1.4, w:5.9, colW:[1.9, 4.0], fontFace:FONT, fontSize:10.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, rowH:0.36});
-    const pr = [...a.appPerms, ...a.delPerms].sort((x, y) => y.level - x.level).slice(0, 9);
+    const pr = [...a.rolePerms, ...a.appPerms, ...a.delPerms].sort((x, y) => y.level - x.level).slice(0, 9);
     s.addText(t("flyPerms"), {x:0.5, y:3.45, w:5.9, h:0.35, fontFace:FONT, fontSize:13, bold:true, color:INK});
-    if(pr.length) s.addTable([hdr([t("pType"), t("pPerm"), t("pLevel")])].concat(pr.map(x => [{text:x.kind === "app" ? t("pApp") : t("pDel")}, {text:x.value + " (" + x.res + ")"}, lvCell(x.level)])),
+    if(pr.length) s.addTable([hdr([t("pType"), t("pPerm"), t("pLevel")])].concat(pr.map(x => [{text:x.kind === "role" ? t("pRole") : x.kind === "app" ? t("pApp") : t("pDel")}, {text:x.value + " (" + x.res + ")"}, lvCell(x.level)])),
       {x:0.5, y:3.85, w:5.9, colW:[1.2, 3.6, 1.1], fontFace:FONT, fontSize:9.5, color:INK, border:{type:"solid", pt:0.5, color:LINE}, rowH:0.3, autoPage:false});
     else s.addText(t("pNone"), {x:0.5, y:3.85, w:5.9, h:0.3, fontFace:FONT, fontSize:11, color:MUTE});
     s.addText(t("flyReco"), {x:6.8, y:1.4, w:6, h:0.35, fontFace:FONT, fontSize:13, bold:true, color:INK});
@@ -1829,7 +1951,7 @@ function demoData(){
   graphRoles.forEach(v => graph.roles["r-" + v] = v); graphScopes.forEach(v => graph.scopes["s-" + v] = v);
   const exo = {id:guid(), appId:RES.EXO, name:"Office 365 Exchange Online", roles:{"r-full_access_as_app":"full_access_as_app", "r-Exchange.ManageAsApp":"Exchange.ManageAsApp"}, scopes:{}};
   const resources = [graph, exo], sps = [graph, exo].map(r => ({id:r.id, appId:r.appId, displayName:r.name, appRoleAssignmentRequired:false}));
-  const apps = [], signins = [], creds = [], assignments = [], grants = [];
+  const apps = [], signins = [], creds = [], assignments = [], grants = [], roles = [], fics = {};
   names.forEach(n => {
     const id = guid(), appId = guid(), spId = guid(), age = 20 + Math.floor(rnd() * 1400);
     const kind = rnd();
@@ -1847,7 +1969,14 @@ function demoData(){
     [...new Set(roles)].forEach(v => rra[0].resourceAccess.push({id:"r-" + v, type:"Role"}));
     [...new Set(scopes)].forEach(v => rra[0].resourceAccess.push({id:"s-" + v, type:"Scope"}));
     if(rnd() < .04) rra.push({resourceAppId:RES.EXO, resourceAccess:[{id:"r-full_access_as_app", type:"Role"}]});
-    apps.push({id, appId, displayName:n, createdDateTime:iso(age), signInAudience:rnd() < .12 ? "AzureADMultipleOrgs" : "AzureADMyOrg", publisherDomain:"contoso.com", passwordCredentials:pw, keyCredentials:kc, owners, requiredResourceAccess:rra});
+    const slug = n.toLowerCase().replace(/\W+/g, "-"), cfgR = rnd();
+    const web = cfgR < .12 ? {redirectUris:[`https://${slug}.azurewebsites.net/signin-oidc`], implicitGrantSettings:{enableAccessTokenIssuance:rnd() < .6, enableIdTokenIssuance:true}}
+      : cfgR < .2 ? {redirectUris:["http://intranet.contoso.local/callback", "https://*.contoso.com/auth"], implicitGrantSettings:{}}
+      : {redirectUris:style >= .45 ? [`https://${slug}.contoso.com/auth`] : [], implicitGrantSettings:{}};
+    apps.push({id, appId, displayName:n, createdDateTime:iso(age), signInAudience:rnd() < .12 ? "AzureADMultipleOrgs" : "AzureADMyOrg", publisherDomain:"contoso.com", passwordCredentials:pw, keyCredentials:kc, owners, requiredResourceAccess:rra,
+      web, spa:{redirectUris:[]}, publicClient:{redirectUris:[]}, isFallbackPublicClient:rnd() < .1});
+    if(["Terraform Pipeline", "Azure DevOps Sync", "Jenkins CI"].includes(n)) fics[id] = [{name:"github-main", issuer:"https://token.actions.githubusercontent.com", subject:`repo:contoso/${slug}:ref:refs/heads/main`}];
+    if(["Defender Automation", "HR Portal", "Intune Reporting", "Old CRM Sync"].includes(n)) roles.push({principalId:spId, role:{"Defender Automation":"Security Administrator", "HR Portal":"User Administrator", "Intune Reporting":"Global Reader", "Old CRM Sync":"Application Administrator"}[n], scope:"/"});
     sps.push({id:spId, appId, displayName:n, appRoleAssignmentRequired:rnd() < .3});
     rra.forEach(r => { const res = r.resourceAppId === RES.EXO ? exo : graph; r.resourceAccess.forEach(x => { if(x.type === "Role" && rnd() < .85) assignments.push({principalId:spId, resourceId:res.id, appRoleId:x.id}); }); });
     const granted = [...new Set(scopes)].filter(() => rnd() < .9).join(" ");
@@ -1858,7 +1987,7 @@ function demoData(){
       [...pw, ...kc].forEach(c => { if(rnd() < .6) creds.push({keyId:c.keyId, appId, signInActivity:{lastSignInDateTime:d}}); });
     }
   });
-  return {org:{name:"Contoso", domain:"contoso.onmicrosoft.com", logo:demoLogo()}, orgOk:true, apps, signins, creds, sps, resources, assignments, grants, ips:{}, signOk:true, credOk:true, permOk:true, grantOk:true, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:true};
+  return {org:{name:"Contoso", domain:"contoso.onmicrosoft.com", logo:demoLogo()}, orgOk:true, apps, signins, creds, sps, resources, assignments, grants, roles, fics, roleOk:true, ficOk:true, apiOk:true, ips:{}, signOk:true, credOk:true, permOk:true, grantOk:true, signErr:"", credErr:"", permErr:"", grantErr:"", scannedAt:new Date().toISOString(), demo:true};
 }
 function demoLogo(){ // fictitious "Contoso" banner logo for the demo deck
   const c = document.createElement("canvas"); c.width = 490; c.height = 72; const x = c.getContext("2d");
@@ -1897,6 +2026,8 @@ function renderAll(){
     else if(!S.raw.credOk) notes.push(t("errCredNA", S.raw.credErr));
     if(!S.raw.permOk) notes.push(t("errPermNA", S.raw.permErr));
     if(!S.raw.grantOk) notes.push(t("errGrantNA", S.raw.grantErr));
+    if(S.raw.roleOk === false && S.raw.roleErr) notes.push(t("errRoleNA", S.raw.roleErr));
+    if(S.raw.ficOk === false && S.raw.ficErr) notes.push(t("errFicNA", S.raw.ficErr));
     if(notes.length) banner(notes.join(" "), S.raw.signOk ? "info" : "err",
       S.raw.demo ? `<button class="btn" type="button" onclick="document.getElementById('outBtn').click()">${esc(t("demoExit"))}</button>` : "");
     else banner("");

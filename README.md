@@ -11,6 +11,7 @@ One HTML page, 100% client-side, read-only. No backend, no telemetry: the data g
 - **Overview**: app registrations, sensitive apps, unused apps that still hold a valid secret, candidates to delete, apps without an active owner, apps any user can sign in to. Distribution of sensitivity, last sign-in, owners and credentials, and a priority list.
 - **App registrations**: every app with its criticality, verdict, sensitivity, top permissions, last sign-in, owners (disabled owners flagged), secrets and certificates. Search (also by permission), filters, sort.
 - **Sensitive apps**: apps ranked by what their **granted** permissions allow, app-only or delegated, with the **user restriction** state ("Assignment required" on the enterprise app) and the main recommendation.
+- **Beyond permissions**: Entra roles held by service principals (Application Administrator, Global Administrator…), federated credentials (an app with no secret can still authenticate from GitHub Actions or another IdP), owners who could escalate on sensitive apps, risky redirect URIs (http, wildcard, cloud hosts prone to subdomain takeover), implicit grant and public client flows.
 - **Recommendations per app, ranked by criticality**: remove secrets on unused apps, delete, reduce application permissions (with the least-privilege alternative: Sites.Selected, RBAC for Applications in Exchange Online…), replace secrets with certificates or managed identities, require user assignment, review admin consents, user Conditional Access for delegated apps, owners, expiring or useless credentials.
 - **Cross-check in the sign-in logs before deleting**: for each delete candidate (one by one or all at once), reads 30 days of interactive, non-interactive, service principal and managed identity sign-ins where the app is the client or the resource. An app with successful sign-ins in the logs is no longer proposed for deletion.
 - **Conditional Access for workload identities**: for app-only apps, reads the service principal sign-in logs of the last 30 days, lists the source IPs, groups them into ranges, and generates a named location plus a blocking policy in **report-only** mode (JSON and PowerShell). Warnings come first for every app: licence, scope (no multi-tenant apps or managed identities), 30-day window, dynamic IPs, failed-only IPs left out, widened ranges.
@@ -70,6 +71,11 @@ New-MgOauth2PermissionGrant -ClientId $sp.Id -ConsentType AllPrincipals -Resourc
 - **Entra ID P1 or P2** for sign-in activity and sign-in logs. Without it, permissions, owners and credentials still work and the verdict shows *Unknown*.
 - **Workload Identities Premium** to create the proposed Conditional Access policies (the analysis itself does not need it).
 
+## Under the hood
+
+- Microsoft Graph JSON `$batch` (20 requests per call, retry on throttling): application permissions, consents, federated credentials and role assignments are read per app, so the scan scales with the number of apps, not users.
+- The PowerPoint library (pptxgenjs 3.12.0) is only loaded when you export a deck, with Subresource Integrity: the browser refuses it if the CDN serves anything else.
+
 ## Run locally
 
 ```bash
@@ -84,7 +90,6 @@ Settings → Pages → *Deploy from a branch* → `main` / `docs`.
 ## Limits
 
 - Sign-in activity is kept for a limited time: an app used once a year can look inactive. Confirm with the owner before deleting.
-- Application permissions are read from the APIs the apps request plus Microsoft Graph, Exchange Online and SharePoint Online.
 - An app running on dynamic cloud IPs needs a fixed egress (NAT gateway, firewall) before an IP-based policy makes sense.
 - Only app registrations owned by the tenant are listed, not enterprise apps from other publishers.
 - A deleted app stays 30 days in the recycle bin (`Restore-MgDirectoryDeletedItem`).
